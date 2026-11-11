@@ -1,25 +1,33 @@
-﻿using Microsoft.Extensions.Logging;
-using optimizerDuck.Services;
+using Microsoft.Extensions.Logging;
+using optimizerDuck.Domain.Abstractions;
+using optimizerDuck.Domain.Execution;
+using optimizerDuck.Services.System;
+using optimizerDuck.Services.System.Primitives;
 
 namespace optimizerDuck.Domain.Optimizations.Models;
 
 /// <summary>
-///     Provides context information for optimization execution.
+///     Per-apply call context: the explicit <see cref="OpCall"/> surface
+///     (change collector, logger, cancellation) plus optimization-specific
+///     dependencies (system snapshot, download service).
 /// </summary>
-public record OptimizationContext
+public class OptimizationContext : OpCall
 {
-    /// <summary>
-    ///     The logger instance used to record diagnostic messages during optimization.
-    /// </summary>
-    public required ILogger Logger { get; init; }
+    /// <summary>Gets the system snapshot containing hardware, OS, and driver details.</summary>
+    public required SystemInfo Snapshot { get; init; }
 
     /// <summary>
-    ///     A snapshot of the current system hardware and software information.
-    /// </summary>
-    public required SystemSnapshot Snapshot { get; init; }
-
-    /// <summary>
-    ///     The service used to download remote resources required by optimizations.
+    ///     Gets the service used to download remote resources required by optimizations.
     /// </summary>
     public required StreamService StreamService { get; init; }
+
+    /// <summary>
+    ///     Gets the shell service used to execute CMD/PowerShell commands.
+    /// </summary>
+    public required ShellService Shell { get; init; }
+
+    /// <summary>
+    ///     Gets the native power-scheme service (get/set/import/delete, live names).
+    /// </summary>
+    public required PowerPlanService PowerPlans { get; init; }
 }

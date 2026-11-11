@@ -1,12 +1,20 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using optimizerDuck.Common.Helpers;
+using optimizerDuck.Domain.Execution;
+using optimizerDuck.Domain.Optimizations.Models;
 using optimizerDuck.Resources.Languages;
-using optimizerDuck.Services;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.System;
+using optimizerDuck.Services.UI;
 using optimizerDuck.UI.Dialogs;
+using optimizerDuck.UI.ViewModels;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
 using StartupApp = optimizerDuck.Domain.Optimizations.Models.StartupManager.StartupApp;
@@ -20,6 +28,7 @@ public partial class StartupManagerViewModel : ViewModel
     private readonly List<StartupTask> _allTasks = [];
     private readonly IContentDialogService _contentDialogService;
     private readonly ILogger<StartupManagerViewModel> _logger;
+    private readonly ToolRunPresenter _presenter;
     private readonly StartupManagerService _startupManagerService;
 
     // Per-section: Apps
@@ -31,7 +40,6 @@ public partial class StartupManagerViewModel : ViewModel
 
     [ObservableProperty]
     private bool _hideMicrosoftTasks = true;
-    private bool _isInitialized;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNotLoading))]
@@ -47,11 +55,13 @@ public partial class StartupManagerViewModel : ViewModel
 
     public StartupManagerViewModel(
         StartupManagerService startupManagerService,
+        ToolRunPresenter presenter,
         IContentDialogService contentDialogService,
         ILogger<StartupManagerViewModel> logger
     )
     {
         _startupManagerService = startupManagerService;
+        _presenter = presenter;
         _contentDialogService = contentDialogService;
         _logger = logger;
     }
@@ -68,12 +78,22 @@ public partial class StartupManagerViewModel : ViewModel
     public bool HasResults => Apps.Count > 0 || Tasks.Count > 0;
     public bool ShowRefreshButton => IsNotLoading && HasResults;
 
+    /// <inheritdoc />
     public override async Task OnNavigatedToAsync()
     {
-        if (_isInitialized)
-            return;
+        await base.OnNavigatedToAsync();
 
-        _isInitialized = true;
+        if (
+            CrossPageEventBus.HasPendingRefresh<ScheduledTasksChanged>()
+            || CrossPageEventBus.HasPendingRefresh<BloatwareChanged>()
+        )
+        {
+            await ReloadTasksAsync();
+        }
+    }
+
+    protected override async Task InitializeOnceAsync()
+    {
         await LoadDataAsync();
     }
 
@@ -114,15 +134,45 @@ public partial class StartupManagerViewModel : ViewModel
     [RelayCommand]
     private void OpenLocation(StartupApp? app)
     {
-        if (app?.CanOpenLocation == true)
-            try
+        if (app?.CanOpenLocation != true || string.IsNullOrWhiteSpace(app.FilePath))
+            return;
+
+        try
+        {
+            var rawPath = app.FilePath.Trim().Trim('"');
+            if (!File.Exists(rawPath) && !Directory.Exists(rawPath))
             {
-                Process.Start("explorer.exe", $"/select,\"{app.FilePath}\"");
+                var match = System.Text.RegularExpressions.Regex.Match(
+                    app.FilePath,
+                    @"^(?:""([^""]+)""|([^\s]+))"
+                );
+                if (match.Success)
+                {
+                    var extracted = match.Groups[1].Success
+                        ? match.Groups[1].Value
+                        : match.Groups[2].Value;
+                    if (File.Exists(extracted) || Directory.Exists(extracted))
+                        rawPath = extracted;
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to open location for {Name}", app.Name);
-            }
+
+            var safePath = Path.GetFullPath(rawPath);
+            if (!File.Exists(safePath) && !Directory.Exists(safePath))
+                return;
+
+            Process.Start(
+                new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{safePath}\"",
+                    UseShellExecute = false,
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to open location for {Name}", app.Name);
+        }
     }
 
     [RelayCommand]
@@ -135,16 +185,37 @@ public partial class StartupManagerViewModel : ViewModel
         {
             Title = task.TaskName,
             Content = new StartupTaskDetailsPanel(task),
-            CloseButtonText = Translations.Button_Ok,
+            CloseButtonText = Loc.Instance["Button.Ok"],
         };
 
         await _contentDialogService.ShowAsync(dialog, CancellationToken.None);
     }
 
-    // Apps filter triggers
-    partial void OnAppSearchTextChanged(string value)
+    private CancellationTokenSource? _appSearchCts;
+    private CancellationTokenSource? _taskSearchCts;
+
+    partial void OnAppSearchTextChanged(string value) => ScheduleApplyAppFilter();
+
+    private void ScheduleApplyAppFilter()
     {
-        ApplyAppFilter();
+        _appSearchCts?.Cancel();
+        _appSearchCts?.Dispose();
+        _appSearchCts = new CancellationTokenSource();
+        var token = _appSearchCts.Token;
+
+        _ = Task.Run(
+            async () =>
+            {
+                try
+                {
+                    await Task.Delay(250, token).ConfigureAwait(false);
+                    if (!token.IsCancellationRequested)
+                        await UiThread.InvokeAsync(ApplyAppFilter, DispatcherPriority.Background);
+                }
+                catch (OperationCanceledException) { }
+            },
+            token
+        );
     }
 
     partial void OnAppSortByIndexChanged(int value)
@@ -152,10 +223,28 @@ public partial class StartupManagerViewModel : ViewModel
         ApplyAppFilter();
     }
 
-    // Tasks filter triggers
-    partial void OnTaskSearchTextChanged(string value)
+    partial void OnTaskSearchTextChanged(string value) => ScheduleApplyTaskFilter();
+
+    private void ScheduleApplyTaskFilter()
     {
-        ApplyTaskFilter();
+        _taskSearchCts?.Cancel();
+        _taskSearchCts?.Dispose();
+        _taskSearchCts = new CancellationTokenSource();
+        var token = _taskSearchCts.Token;
+
+        _ = Task.Run(
+            async () =>
+            {
+                try
+                {
+                    await Task.Delay(250, token).ConfigureAwait(false);
+                    if (!token.IsCancellationRequested)
+                        await UiThread.InvokeAsync(ApplyTaskFilter, DispatcherPriority.Background);
+                }
+                catch (OperationCanceledException) { }
+            },
+            token
+        );
     }
 
     partial void OnTaskSortByIndexChanged(int value)
@@ -286,37 +375,122 @@ public partial class StartupManagerViewModel : ViewModel
         OnPropertyChanged(nameof(ShowRefreshButton));
     }
 
+    private readonly HashSet<object> _suppressToggle = [];
+
     private async void App_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(StartupApp.IsEnabled) && sender is StartupApp app)
+        if (e.PropertyName != nameof(StartupApp.IsEnabled) || sender is not StartupApp app)
+            return;
+
+        // The rollback re-assigns IsEnabled, so guard against re-entrancy.
+        if (!_suppressToggle.Add(app))
+            return;
+
+        try
         {
-            try
+            var result = await _startupManagerService.ToggleStartupApp(app, app.IsEnabled);
+            if (!result.Ok)
             {
-                await _startupManagerService
-                    .ToggleStartupApp(app, app.IsEnabled)
-                    .ConfigureAwait(false);
+                // The write failed, so the real Windows state is unchanged: restore the
+                // toggle to it instead of leaving the UI claiming a state that is not applied.
+                _logger.LogWarning(
+                    "Startup app toggle failed for {Name}: {Error}",
+                    app.Name,
+                    result.Error
+                );
+                app.IsEnabled = !app.IsEnabled;
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to toggle startup app {Name}", app.Name);
-            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to toggle startup app {Name}", app.Name);
+            app.IsEnabled = !app.IsEnabled;
+        }
+        finally
+        {
+            _suppressToggle.Remove(app);
         }
     }
 
     private async void Task_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(StartupTask.IsEnabled) && sender is StartupTask task)
+        if (e.PropertyName != nameof(StartupTask.IsEnabled) || sender is not StartupTask task)
+            return;
+
+        if (!_suppressToggle.Add(task))
+            return;
+
+        try
         {
-            try
+            var enable = task.IsEnabled;
+            var request = NewTaskRequest(task, enable);
+            var result = await _presenter.RunAsync(request);
+
+            if (!await _presenter.ReportAsync(request, result, FailureTitle))
             {
-                await _startupManagerService
-                    .ToggleStartupTask(task, task.IsEnabled)
-                    .ConfigureAwait(false);
+                _logger.LogWarning(
+                    "Startup task toggle did not end as asked for {Name}: {Message}",
+                    task.TaskName,
+                    result.Message
+                );
+                task.IsEnabled = !task.IsEnabled;
+                return;
             }
-            catch (Exception ex)
+
+            CrossPageEventBus.NotifyDataChanged<StartupAppsChanged>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to toggle startup task {Name}", task.TaskName);
+            task.IsEnabled = !task.IsEnabled;
+        }
+        finally
+        {
+            _suppressToggle.Remove(task);
+        }
+    }
+
+    /// <summary>Builds the run for one startup task toggle.</summary>
+    /// <param name="task">The startup task the user flipped.</param>
+    /// <param name="enable">
+    ///     <see langword="true" /> to enable the task; otherwise, <see langword="false" />.
+    /// </param>
+    private OperationRequest NewTaskRequest(StartupTask task, bool enable) =>
+        new(
+            ToolSubjects.StartupManagerTasks,
+            Loc.Instance["StartupManager.Header.Title"],
+            _logger,
+            RevertPersistence.Disabled,
+            async (_, context) =>
             {
-                _logger.LogError(ex, "Failed to toggle startup task {Name}", task.TaskName);
+                var result = await _startupManagerService.ToggleStartupTask(context, task, enable);
+
+                return result.Ok
+                    ? context.Changes.ToApplyResult()
+                    : ApplyResult.False(
+                        result.Error ?? Loc.Instance["Optimization.Apply.Error.AllStepsFailed"]
+                    );
             }
+        );
+
+    /// <summary>Gets the heading a failed action is reported under.</summary>
+    private static string FailureTitle => Loc.Instance["StartupManager.Header.Title"];
+
+    private async Task ReloadTasksAsync()
+    {
+        try
+        {
+            foreach (var task in Tasks)
+                task.PropertyChanged -= Task_PropertyChanged;
+
+            var tasks = await _startupManagerService.GetStartupTasksAsync();
+            _allTasks.Clear();
+            _allTasks.AddRange(tasks);
+            ApplyTaskFilter();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to reload startup tasks");
         }
     }
 }

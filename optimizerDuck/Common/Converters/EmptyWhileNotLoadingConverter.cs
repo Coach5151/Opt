@@ -4,6 +4,7 @@ using System.Windows.Data;
 
 namespace optimizerDuck.Common.Converters;
 
+/// <summary>Visible for a zero item count while not loading; otherwise Collapsed.</summary>
 public class EmptyWhileNotLoadingConverter : IMultiValueConverter
 {
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)

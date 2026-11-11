@@ -1,12 +1,15 @@
-﻿using System.Windows;
+using System.Windows;
 
 namespace optimizerDuck.Common.Helpers;
 
 public static class ThemeResource
 {
-    public static T Get<T>(string key)
+    public static T? Get<T>(string key)
         where T : class
     {
-        return Application.Current.Resources[key] as T ?? throw new KeyNotFoundException(key);
+        if (Application.Current is null)
+            return null;
+
+        return Application.Current.TryFindResource(key) as T;
     }
 }

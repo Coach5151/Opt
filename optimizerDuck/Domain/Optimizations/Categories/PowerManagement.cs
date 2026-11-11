@@ -1,20 +1,28 @@
 ﻿using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
+using System.Globalization;
+using System.IO;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using optimizerDuck.Common.Extensions;
 using optimizerDuck.Common.Helpers;
 using optimizerDuck.Domain.Abstractions;
 using optimizerDuck.Domain.Attributes;
+using optimizerDuck.Domain.Execution;
 using optimizerDuck.Domain.Optimizations.Models;
 using optimizerDuck.Domain.Optimizations.Models.Services;
+using optimizerDuck.Domain.Revert.Steps;
 using optimizerDuck.Domain.UI;
-using optimizerDuck.Services.Managers;
-using optimizerDuck.Services.OptimizationServices;
-using optimizerDuck.UI.Pages.Optimizations;
+using optimizerDuck.Resources.Languages;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.System;
+using optimizerDuck.Services.System.Primitives;
+using optimizerDuck.UI.Pages.Optimize.Categories;
 
 namespace optimizerDuck.Domain.Optimizations.Categories;
 
 [OptimizationCategory(typeof(PowerManagementOptimizerPage))]
-public class PowerManagement : IOptimizationCategory
+public class PowerManagement : LocalizedObject, IOptimizationCategory
 {
     public string Name => Loc.Instance[$"Optimizer.{nameof(PowerManagement)}"];
     public OptimizationCategoryOrder Order { get; init; } = OptimizationCategoryOrder.Power;
@@ -25,42 +33,98 @@ public class PowerManagement : IOptimizationCategory
         Risk = OptimizationRisk.Moderate,
         Tags = OptimizationTags.System | OptimizationTags.Power | OptimizationTags.Performance
     )]
-    public class DisableHibernate : BaseOptimization
+    public class DisableHibernateAndFastStartup : BaseOptimization
     {
         public override Task<ApplyResult> ApplyAsync(
             IProgress<ProcessingProgress> progress,
             OptimizationContext context
         )
         {
-            ShellService.CMD("powercfg /h off", "powercfg /h on");
-            context.Logger.LogInformation("Disabled hibernate");
-            return Task.FromResult(ApplyResult.True());
+            // An unreadable previous state is recorded as unknown, so a revert leaves the system
+            // alone instead of guessing and committing a hibernation file that never existed.
+            var wasPresent = HibernationService.IsHibernationFilePresent();
+            if (wasPresent is null)
+                context.Logger.LogWarning(
+                    "Hibernation state could not be read, the recorded step will mark it unknown"
+                );
+
+            Apply(context, wasPresent);
+
+            return Task.FromResult(context.Changes.ToApplyResult());
+        }
+
+        /// <summary>
+        ///     Whether the native call is needed. An unknown state is attempted, because a failed
+        ///     read is not the same as "already disabled".
+        /// </summary>
+        internal static bool NeedsHibernationChange(bool? wasPresent) => wasPresent is not false;
+
+        internal static OpResult Apply(OpCall call, bool? wasPresent)
+        {
+            if (!NeedsHibernationChange(wasPresent))
+            {
+                // Disabling a file that is already gone would call a privileged API for nothing
+                // and could fail, turning a correct machine into a failed apply.
+                call.Changes.AddSkip(
+                    ServiceStrings.HibernationName,
+                    ServiceStrings.HibernationDescriptionDisable,
+                    new HibernationDetail { PreviousPresent = false, NewPresent = null }
+                );
+                call.Logger.LogInformation("Hibernation already disabled, skipping");
+                return OpResult.Success();
+            }
+
+            var result = HibernationService.SetHibernationFile(present: false);
+            var revert = new HibernationRevertStep { WasPresent = wasPresent };
+
+            if (result.Succeeded)
+            {
+                call.Changes.Add(
+                    ServiceStrings.HibernationName,
+                    ServiceStrings.HibernationDescriptionDisable,
+                    true,
+                    revert,
+                    detail: new HibernationDetail
+                    {
+                        PreviousPresent = wasPresent,
+                        NewPresent = false,
+                    }
+                );
+                call.Logger.LogInformation(
+                    "Disabled hibernation and Fast Startup. Previous state: {State}",
+                    wasPresent is { } present
+                        ? present
+                            ? "Enabled"
+                            : "Disabled"
+                        : "Unknown"
+                );
+                return OpResult.Success(revert);
+            }
+
+            // A refused transition fails the same way on a retry (it needs privileges), but the
+            // retry keeps the recorded step consistent with the other providers.
+            var error = ServiceStrings.Format(
+                ServiceStrings.HibernationErrorChangeFailed,
+                $"0x{result.NativeStatus:X8}"
+            );
+            call.Logger.LogWarning(
+                "[HIBERNATION][FAIL] NTSTATUS 0x{Status:X8}",
+                result.NativeStatus
+            );
+            call.Changes.Add(
+                ServiceStrings.HibernationName,
+                ServiceStrings.HibernationDescriptionDisable,
+                false,
+                null,
+                error,
+                result.ExceptionText,
+                retryCall => Task.FromResult(Apply(retryCall, wasPresent))
+            );
+            return OpResult.Fail(error, result.ExceptionText);
         }
     }
 
-    [Optimization(
-        Id = "2B49A8A6-E8CA-4D77-A883-DC27BDBE8B05",
-        Risk = OptimizationRisk.Moderate,
-        Tags = OptimizationTags.System | OptimizationTags.Power | OptimizationTags.Performance
-    )]
-    public class DisableFastStartup : BaseOptimization
-    {
-        public override Task<ApplyResult> ApplyAsync(
-            IProgress<ProcessingProgress> progress,
-            OptimizationContext context
-        )
-        {
-            RegistryService.Write(
-                new RegistryItem(
-                    @"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Power",
-                    "HiberbootEnabled",
-                    0
-                )
-            );
-            context.Logger.LogInformation("Disabled fast startup");
-            return Task.FromResult(ApplyResult.True());
-        }
-    }
+    internal const string UsbReasonNoDevices = "usb.noDevices";
 
     [Optimization(
         Id = "805F993F-67F9-4F5A-8606-998EA9087CF0",
@@ -75,106 +139,150 @@ public class PowerManagement : IOptimizationCategory
         )
         {
             context.Logger.LogInformation("Saving current USB power state");
-            var usbStates = ShellService.PowerShell(
-                """
-                $states = Get-CimInstance -Namespace root\wmi -ClassName MSPower_DeviceEnable -ErrorAction SilentlyContinue |
-                Where-Object { $_.InstanceName -match 'USB\\ROOT' } |
-                Select-Object InstanceName, Enable
-
-                $states | ConvertTo-Json -Compress
-                """
-            );
-
-            if (string.IsNullOrWhiteSpace(usbStates.Stdout))
+            var captured = UsbPowerService.Capture();
+            if (captured.Count == 0)
             {
-                context.Logger.LogInformation("No USB devices found, skipping");
-                return Task.FromResult(ApplyResult.True());
+                context.Logger.LogInformation("No USB devices found, nothing to change");
+                context.Changes.AddNotApplicable(
+                    ServiceStrings.UsbPowerName,
+                    ServiceStrings.UsbPowerInfoNoDevices,
+                    new UsbPowerDetail { DeviceCount = 0, Reason = UsbReasonNoDevices }
+                );
+                return Task.FromResult(context.Changes.ToApplyResult());
             }
 
             context.Logger.LogInformation("Disabling USB power saving");
-            ShellService.PowerShell(
-                """
-                $devices = Get-CimInstance -Namespace root\wmi -ClassName MSPower_DeviceEnable -ErrorAction SilentlyContinue |
-                Where-Object { $_.InstanceName -match 'USB\\ROOT' }
+            var revertStep = new UsbPowerRevertStep
+            {
+                States = captured
+                    .Select(static state => new UsbPowerRevertStep.DeviceState
+                    {
+                        InstanceName = state.InstanceName,
+                        Enable = state.Enable,
+                    })
+                    .ToList(),
+            };
 
-                foreach ($d in $devices) {
-                    if ($d.Enable -ne $false) {
-                        Set-CimInstance -CimInstance $d -Property @{ Enable = $false } | Out-Null
-                    }
-                }
-                """,
-                $$"""
-                $states = @('{{usbStates.Stdout}}' | ConvertFrom-Json)
+            Apply(context, revertStep, UsbPowerService.Disable());
 
-                foreach ($s in $states) {
-                    $obj = Get-CimInstance -Namespace root\wmi -ClassName MSPower_DeviceEnable -ErrorAction SilentlyContinue |
-                        Where-Object { $_.InstanceName -eq $s.InstanceName }
+            return Task.FromResult(context.Changes.ToApplyResult());
+        }
 
-                    if ($obj -and $obj.Enable -ne [bool]$s.Enable) {
-                        Write-Host "Reverting $($s.InstanceName) to $([bool]$s.Enable)"
-                        Set-CimInstance -CimInstance $obj -Property @{ Enable = [bool]$s.Enable } | Out-Null
-                    }
-                }
-                """
+        internal static OpResult Apply(
+            OpCall call,
+            UsbPowerRevertStep revertStep,
+            UsbPowerService.UsbPowerWriteResult? result
+        )
+        {
+            var description = ServiceStrings.Format(
+                ServiceStrings.UsbPowerDescriptionDisable,
+                revertStep.States.Count
             );
 
-            return Task.FromResult(ApplyResult.True());
+            // Some devices refusing still leaves the others changed, so the recorded step keeps
+            // their previous state and the failure names the devices that refused.
+            if (result is { FailedDevices.Count: > 0 })
+            {
+                var detail = string.Join(", ", result.FailedDevices);
+                call.Logger.LogWarning(
+                    "[USB][PARTIAL] {Count} device(s) changed, {Failed} refused: {Detail}",
+                    result.ChangedCount,
+                    result.FailedDevices.Count,
+                    detail
+                );
+                call.Changes.Add(
+                    ServiceStrings.UsbPowerName,
+                    description,
+                    false,
+                    revertStep,
+                    ServiceStrings.UsbPowerErrorChangeFailed,
+                    detail,
+                    retryCall =>
+                        Task.FromResult(Apply(retryCall, revertStep, UsbPowerService.Disable()))
+                );
+                return OpResult.Fail(ServiceStrings.UsbPowerErrorChangeFailed, detail);
+            }
+
+            if (result is { ChangedCount: 0 })
+            {
+                // Every device already matched the target, so nothing was written and there is
+                // nothing to restore.
+                call.Logger.LogInformation("[USB][SKIP] every device already at the target");
+                call.Changes.AddSkip(
+                    ServiceStrings.UsbPowerName,
+                    ServiceStrings.UsbPowerInfoAlreadyConfigured,
+                    new UsbPowerDetail { DeviceCount = 0 }
+                );
+                return OpResult.Success();
+            }
+
+            if (result is not null)
+            {
+                call.Changes.Add(
+                    ServiceStrings.UsbPowerName,
+                    description,
+                    true,
+                    revertStep,
+                    detail: new UsbPowerDetail { DeviceCount = result.ChangedCount }
+                );
+                call.Logger.LogInformation(
+                    "[USB][OK] power saving disabled, {Count} device(s) changed",
+                    result.ChangedCount
+                );
+                return OpResult.Success(revertStep);
+            }
+
+            // Null means the WMI query itself failed (class unavailable or the write was refused).
+            var error = ServiceStrings.UsbPowerErrorChangeFailed;
+            call.Logger.LogWarning("[USB][FAIL] WMI write refused or unavailable");
+            call.Changes.Add(
+                ServiceStrings.UsbPowerName,
+                description,
+                false,
+                null,
+                error,
+                null,
+                retryCall =>
+                    Task.FromResult(Apply(retryCall, revertStep, UsbPowerService.Disable()))
+            );
+            return OpResult.Fail(error, null);
         }
     }
 
     [Optimization(
         Id = "EE71E993-EE41-4449-8856-84B09B2B0C46",
         Risk = OptimizationRisk.Safe,
-        Tags = OptimizationTags.Latency
-            | OptimizationTags.Performance
-            | OptimizationTags.NetworkRequired
-            | OptimizationTags.Power
+        Tags = OptimizationTags.Latency | OptimizationTags.Performance | OptimizationTags.Power
     )]
     public class InstallOptimizerDuckPowerPlan : BaseOptimization
     {
+        private static readonly Guid OptimizerDuckPlanId = Guid.Parse(Shared.PowerPlanGUID);
+
         public override async Task<ApplyResult> ApplyAsync(
             IProgress<ProcessingProgress> progress,
             OptimizationContext context
         )
         {
-            var activeQuery = ShellService.CMD("powercfg /getactivescheme");
-            var match = Regex.Match(
-                activeQuery.Stdout,
-                @"Power Scheme GUID:\s*([a-fA-F0-9\-]{36})",
-                RegexOptions.IgnoreCase
-            );
-
-            if (!match.Success)
-            {
-                context.Logger.LogError("Failed to detect current active power plan");
-                return ApplyResult.False(Loc.Instance[$"{ErrorPrefix}.DetectActivePlanFailed"]);
-            }
-
-            var previousPlanGuid = match.Groups[1].Value;
-            context.Logger.LogInformation("Current active power plan: {Guid}", previousPlanGuid);
-
-            progress?.Report(
-                new ProcessingProgress
-                {
-                    Message = Loc.Instance[$"{ProgressPrefix}.Downloading"],
-                    IsIndeterminate = true,
-                }
-            );
-
-            var (success, powerPlanPath) = await context.StreamService.TryDownloadAsync(
-                Shared.PowerPlanUrl,
+            var powerPlanPath = Path.Combine(
+                Shared.AssetsDirectory,
+                "PowerPlans",
                 "optimizerDuck.pow"
             );
-            if (!success || string.IsNullOrWhiteSpace(powerPlanPath))
+            if (
+                !EmbeddedResourceHelper.TryExtract(
+                    "PowerPlans.optimizerDuck.pow",
+                    powerPlanPath,
+                    true
+                )
+            )
             {
-                context.Logger.LogError("Failed to download optimizerDuck power plan");
-                return ApplyResult.False(Loc.Instance[$"{ErrorPrefix}.DownloadFailed"]);
+                context.Logger.LogError("Failed to extract embedded power plan");
+                return ApplyResult.False(
+                    "Failed to extract optimizerDuck power plan from resources."
+                );
             }
 
-            context.Logger.LogInformation(
-                "Downloaded optimizerDuck power plan to {Path}",
-                powerPlanPath
-            );
+            context.Logger.LogInformation("Extracted power plan to {Path}", powerPlanPath);
 
             progress?.Report(
                 new ProcessingProgress
@@ -184,42 +292,35 @@ public class PowerManagement : IOptimizationCategory
                 }
             );
 
-            ShellService.CMD(
-                "powercfg /setactive 381b4222-f694-41f0-9685-ff5bb260df2e",
-                policy: ShellPolicy.SuccessExitCodes(0, 1)
-            ); // set Balanced
-            var result = ShellService.CMD(
-                $"powercfg /delete {Shared.PowerPlanGUID}",
-                $"powercfg /setactive {previousPlanGuid}",
-                ShellPolicy.SuccessExitCodes(0, 1)
+            var install = await PowerPlanChanges.InstallAsync(
+                context,
+                context.PowerPlans,
+                powerPlanPath,
+                OptimizerDuckPlanId,
+                context.CancellationToken
             );
-            if (result.ExitCode == 0)
-                context.Logger.LogInformation("Deleted old power plan");
-
-            var importResult = ShellService.CMD(
-                $"powercfg /import \"{powerPlanPath}\" {Shared.PowerPlanGUID}"
-            );
-            if (importResult.ExitCode != 0)
+            var installResult = install.Result;
+            var installedId = install.InstalledId;
+            var previousId = install.PreviousId;
+            if (!installResult.Ok)
             {
                 context.Logger.LogError(
-                    "Failed to import optimizerDuck power plan: {Error}",
-                    importResult.Stderr
+                    "Failed to install optimizerDuck power plan: {Error}",
+                    installResult.Error ?? "unknown"
                 );
-                return ApplyResult.False(Loc.Instance[$"{ErrorPrefix}.ImportFailed"]);
-            }
-
-            var setActiveResult = ShellService.CMD($"powercfg /setactive {Shared.PowerPlanGUID}");
-            if (setActiveResult.ExitCode != 0)
-            {
-                context.Logger.LogError(
-                    "Failed to activate optimizerDuck power plan: {Error}",
-                    setActiveResult.Stderr
+                if (previousId is null)
+                    return ApplyResult.False(Loc.Instance[$"{ErrorPrefix}.DetectActivePlanFailed"]);
+                return ApplyResult.False(
+                    Loc.Instance[
+                        installedId is null
+                            ? $"{ErrorPrefix}.ImportFailed"
+                            : $"{ErrorPrefix}.ActivateFailed"
+                    ]
                 );
-                return ApplyResult.False(Loc.Instance[$"{ErrorPrefix}.ActivateFailed"]);
             }
 
             context.Logger.LogInformation("Installed optimizerDuck power plan successfully!");
-            return ApplyResult.True();
+            return context.Changes.ToApplyResult();
         }
     }
 
@@ -236,6 +337,7 @@ public class PowerManagement : IOptimizationCategory
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKLM\SYSTEM\CurrentControlSet\Control\USB\AutomaticSurpriseRemoval",
                     "AttemptRecoveryFromUsbPowerDrain",
@@ -247,37 +349,9 @@ public class PowerManagement : IOptimizationCategory
                     1
                 )
             );
-            context.Logger.LogInformation("Disabled power saving features");
-            return Task.FromResult(ApplyResult.True());
-        }
-    }
 
-    [Optimization(
-        Id = "C24B2B0E-A66D-43D0-8B4E-30550D107A68",
-        Risk = OptimizationRisk.Safe,
-        Tags = OptimizationTags.Performance | OptimizationTags.Latency | OptimizationTags.Audio
-    )]
-    public class OptimizeMultimediaProfile : BaseOptimization
-    {
-        public override Task<ApplyResult> ApplyAsync(
-            IProgress<ProcessingProgress> progress,
-            OptimizationContext context
-        )
-        {
-            RegistryService.Write(
-                new RegistryItem(
-                    @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile",
-                    "NoLazyMode",
-                    1
-                ),
-                new RegistryItem(
-                    @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile",
-                    "AlwaysOn",
-                    1
-                )
-            );
-            context.Logger.LogInformation("Optimized multimedia profile settings");
-            return Task.FromResult(ApplyResult.True());
+            context.Logger.LogInformation("Disabled power saving features");
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 }

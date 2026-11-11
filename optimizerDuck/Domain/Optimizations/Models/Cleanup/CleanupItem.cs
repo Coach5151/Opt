@@ -1,72 +1,56 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using optimizerDuck.Common.Extensions;
+using optimizerDuck.Services.Configuration;
 using Wpf.Ui.Controls;
 
 namespace optimizerDuck.Domain.Optimizations.Models.Cleanup;
 
 /// <summary>
 ///     Represents a disk cleanup item (e.g., temp files, Windows Update cache).
-/// </summary>
-public partial class CleanupItem : ObservableObject
+public partial class CleanupItem : LocalizedObject
 {
-    /// <summary>
-    ///     The number of files in this cleanup item.
-    /// </summary>
     [ObservableProperty]
     private long _fileCount;
 
-    /// <summary>
-    ///     Indicates whether cleanup is in progress.
-    /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowActions))]
     private bool _isCleaning;
 
-    /// <summary>
-    ///     Indicates whether this item has been scanned.
-    /// </summary>
     [ObservableProperty]
     private bool _isScanned;
 
-    /// <summary>
-    ///     Indicates whether scanning is in progress.
-    /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowActions))]
     private bool _isScanning;
 
-    /// <summary>
-    ///     Indicates whether this item is selected for cleanup.
-    /// </summary>
     [ObservableProperty]
     private bool _isSelected = true;
 
-    /// <summary>
-    ///     The size of files in bytes.
-    /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowActions))]
     private long _sizeBytes;
 
-    /// <summary>
-    ///     Unique identifier for this cleanup item.
-    /// </summary>
     public required string Id { get; init; }
 
     /// <summary>
-    ///     Display name of the cleanup item.
+    ///     Gets the display name resolved from <see cref="NameKey" /> for the current culture.
     /// </summary>
-    public required string Name { get; init; }
+    public string Name => Loc.Instance[NameKey];
 
     /// <summary>
-    ///     Description of what this cleanup item contains.
+    ///     Gets the description resolved from <see cref="DescriptionKey" /> for the
+    ///     current culture.
     /// </summary>
-    public required string Description { get; init; }
+    public string Description => Loc.Instance[DescriptionKey];
 
-    /// <summary>
-    ///     The file path or folder to clean.
-    /// </summary>
+    /// <summary>Resource key that localizes <see cref="Name" />.</summary>
+    public string NameKey { get; init; } = string.Empty;
+
+    /// <summary>Resource key that localizes <see cref="Description" />.</summary>
+    public string DescriptionKey { get; init; } = string.Empty;
+
     public required string Path { get; init; }
 
-    /// <summary>
-    ///     The icon to display in the UI.
-    /// </summary>
     public required SymbolRegular Icon { get; init; }
 
     /// <summary>
@@ -74,14 +58,10 @@ public partial class CleanupItem : ObservableObject
     /// </summary>
     public bool IsCommand { get; init; }
 
-    /// <summary>
-    ///     Whether the folder exists and can be opened.
-    /// </summary>
     public bool CanOpenFolder => !IsCommand && System.IO.Directory.Exists(Path);
 
-    /// <summary>
-    ///     Gets the human-readable size string (e.g., "1.5 GB").
-    /// </summary>
+    public bool ShowActions => SizeBytes > 0 && !IsScanning && !IsCleaning;
+
     public string FormattedSize => FormatBytes(SizeBytes);
 
     partial void OnSizeBytesChanged(long value)
@@ -89,9 +69,6 @@ public partial class CleanupItem : ObservableObject
         OnPropertyChanged(nameof(FormattedSize));
     }
 
-    /// <summary>
-    ///     Formats bytes into a human-readable string.
-    /// </summary>
     public static string FormatBytes(long bytes)
     {
         return bytes switch

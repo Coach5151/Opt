@@ -1,8 +1,11 @@
-﻿using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using optimizerDuck.Domain.Abstractions;
+using optimizerDuck.Domain.Exceptions;
 using optimizerDuck.Domain.Optimizations.Models.Services;
 using optimizerDuck.Resources.Languages;
-using optimizerDuck.Services.OptimizationServices;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.System.Primitives;
 
 namespace optimizerDuck.Domain.Revert.Steps;
 
@@ -12,12 +15,13 @@ namespace optimizerDuck.Domain.Revert.Steps;
 public class ShellRevertStep : IRevertStep
 {
     /// <summary>
-    ///     The type of shell to use for execution.
+    ///     Gets or sets the type of shell to use for execution
+    ///     (<see cref="ShellType.CMD" /> or <see cref="ShellType.PowerShell" />).
     /// </summary>
     public ShellType ShellType { get; set; }
 
     /// <summary>
-    ///     The command string to execute for reverting.
+    ///     Gets or sets the command string to execute for reverting.
     /// </summary>
     public string Command { get; set; } = string.Empty;
 
@@ -25,37 +29,38 @@ public class ShellRevertStep : IRevertStep
     public string Type => "Shell";
 
     /// <inheritdoc />
-    public string Description =>
-        string.Format(Translations.Revert_Shell_Description_Run, ShellType, Command);
+    public string Description => Loc.Instance["Revert.Shell.Description.Run", ShellType, Command];
 
     /// <inheritdoc />
-    public async Task<bool> ExecuteAsync()
+    public async Task<bool> ExecuteAsync(RevertContext context, ILogger logger)
     {
-        return await Task.Run(() =>
+        var result = ShellType switch
         {
-            var result = ShellType switch
+            ShellType.PowerShell => await context
+                .Shell.QueryPowerShellAsync(Command, logger)
+                .ConfigureAwait(false),
+            ShellType.CMD => await context
+                .Shell.QueryCMDAsync(Command, logger)
+                .ConfigureAwait(false),
+            _ => new ShellResult
             {
-                ShellType.PowerShell => ShellService.PowerShell(Command),
-                ShellType.CMD => ShellService.CMD(Command),
-                _ => new ShellResult
-                {
-                    Command = Command,
-                    Stdout = "",
-                    Stderr = "Unknown shell type",
-                    ExitCode = 1,
-                    Duration = TimeSpan.Zero,
-                },
-            };
+                Command = Command,
+                Stdout = "",
+                Stderr = Loc.Instance["Revert.Shell.Error.UnknownShellType"],
+                ExitCode = 1,
+                Duration = TimeSpan.Zero,
+            },
+        };
 
-            if (result.ExitCode != 0)
-                throw new Exception(
-                    !string.IsNullOrWhiteSpace(result.Stderr)
-                        ? result.Stderr
-                        : $"Command failed with exit code {result.ExitCode}"
-                );
+        if (result.ExitCode != 0)
+        {
+            var error = !string.IsNullOrWhiteSpace(result.Stderr)
+                ? result.Stderr
+                : Loc.Instance["Revert.Shell.Error.CommandFailed", result.ExitCode];
+            throw new StepExecutionException(error, result.Stderr);
+        }
 
-            return result.ExitCode == 0;
-        });
+        return true;
     }
 
     /// <inheritdoc />

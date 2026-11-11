@@ -1,8 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using optimizerDuck.Domain.Abstractions;
+using optimizerDuck.Domain.Exceptions;
+using optimizerDuck.Domain.Execution;
 using optimizerDuck.Domain.Optimizations.Models.Services;
 using optimizerDuck.Resources.Languages;
-using optimizerDuck.Services.OptimizationServices;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.System.Primitives;
 
 namespace optimizerDuck.Domain.Revert.Steps;
 
@@ -12,12 +16,12 @@ namespace optimizerDuck.Domain.Revert.Steps;
 public class ServiceRevertStep : IRevertStep
 {
     /// <summary>
-    ///     The name of the Windows service to restore.
+    ///     Gets or sets the name of the Windows service to restore.
     /// </summary>
     public string ServiceName { get; set; } = string.Empty;
 
     /// <summary>
-    ///     The original startup type to restore the service to.
+    ///     Gets or sets the original startup type to restore the service to.
     /// </summary>
     public ServiceStartupType OriginalStartupType { get; set; }
 
@@ -26,30 +30,53 @@ public class ServiceRevertStep : IRevertStep
 
     /// <inheritdoc />
     public string Description =>
-        string.Format(
-            Translations.Revert_Service_Description_Restore,
-            ServiceName,
-            OriginalStartupType
-        );
+        Loc.Instance["Revert.Service.Description.Restore", ServiceName, OriginalStartupType];
 
     /// <inheritdoc />
-    public async Task<bool> ExecuteAsync()
+    public async Task<bool> ExecuteAsync(RevertContext _, ILogger logger)
     {
-        return await Task.Run(() =>
-        {
-            var result = ServiceProcessService.ChangeServiceStartupType(
+        var opCall = new OpCall { Logger = logger };
+        var result = await ServiceProcessService
+            .ChangeServiceStartupTypeAsync(
+                opCall,
                 new ServiceItem { Name = ServiceName, StartupType = OriginalStartupType }
+            )
+            .ConfigureAwait(false);
+
+        if (!result.Ok)
+        {
+            // Fail closed: access-denied returns false so RevertManager records a failed
+            // step; every other failure throws with provider error detail.
+            var accessDenied = ServiceStrings.Format(
+                ServiceStrings.ServiceInfoAccessDenied,
+                ServiceName
+            );
+            if (string.Equals(result.Error, accessDenied, StringComparison.Ordinal))
+                return false;
+            throw new StepExecutionException(result.Error ?? Description, result.ErrorDetail);
+        }
+
+        var (actual, notFound) = await ServiceProcessService
+            .GetStartupTypeAsync(ServiceName, opCall.Logger)
+            .ConfigureAwait(false);
+
+        // a missing service has nothing to restore.
+        if (notFound)
+            return true;
+
+        // null without NotFound means the query failed; never report an unverified restore.
+        if (actual is null)
+            throw new StepExecutionException(
+                $"Service verify failed for {ServiceName}: could not query the current startup type.",
+                null
             );
 
-            if (!result)
-                throw new Exception(
-                    string.Format(
-                        Translations.Service_Service_Error_UpdateRegistryForStartupTypeFailed
-                    )
-                );
-
-            return result;
-        });
+        if (actual.Value != OriginalStartupType)
+            throw new StepExecutionException(
+                $"Service verify failed for {ServiceName}: expected {OriginalStartupType}, actual={actual.Value}",
+                null
+            );
+        return true;
     }
 
     /// <inheritdoc />

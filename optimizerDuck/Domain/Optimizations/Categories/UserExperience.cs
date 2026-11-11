@@ -1,18 +1,22 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
+using optimizerDuck.Common.Extensions;
 using optimizerDuck.Domain.Abstractions;
 using optimizerDuck.Domain.Attributes;
+using optimizerDuck.Domain.Conditions;
+using optimizerDuck.Domain.Execution;
 using optimizerDuck.Domain.Optimizations.Models;
 using optimizerDuck.Domain.Optimizations.Models.Services;
 using optimizerDuck.Domain.UI;
-using optimizerDuck.Services.Managers;
-using optimizerDuck.Services.OptimizationServices;
-using optimizerDuck.UI.Pages.Optimizations;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.System.Primitives;
+using optimizerDuck.UI.Pages.Optimize.Categories;
 
 namespace optimizerDuck.Domain.Optimizations.Categories;
 
 [OptimizationCategory(typeof(UserExperienceOptimizerPage))]
-public class UserExperience : IOptimizationCategory
+public class UserExperience : LocalizedObject, IOptimizationCategory
 {
     public string Name => Loc.Instance[$"Optimizer.{nameof(UserExperience)}"];
     public OptimizationCategoryOrder Order { get; init; } =
@@ -32,6 +36,7 @@ public class UserExperience : IOptimizationCategory
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize",
                     "StartupDelayInMSec",
@@ -40,14 +45,14 @@ public class UserExperience : IOptimizationCategory
                 new RegistryItem(@"HKCU\Control Panel\Desktop", "MenuShowDelay", "0")
             );
             context.Logger.LogInformation("Speeded up Explorer and menus");
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 
     [Optimization(
         Id = "A3D1E8F2-7B4C-4A5D-9E62-8F3A1B7C4D59",
         Risk = OptimizationRisk.Safe,
-        Tags = OptimizationTags.Performance | OptimizationTags.Visual
+        Tags = OptimizationTags.System | OptimizationTags.Performance | OptimizationTags.Visual
     )]
     public sealed class DisableVisualEffects : BaseOptimization
     {
@@ -57,6 +62,7 @@ public class UserExperience : IOptimizationCategory
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced",
                     "TaskbarAnimations",
@@ -75,7 +81,111 @@ public class UserExperience : IOptimizationCategory
                 new RegistryItem(@"HKCU\Software\Microsoft\Windows\DWM", "EnableAeroPeek", 0)
             );
             context.Logger.LogInformation("Disabled visual effects for better performance");
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
+        }
+    }
+
+    [Optimization(
+        Id = "950cd979-7483-400b-a207-abd4741a1270",
+        Risk = OptimizationRisk.Safe,
+        Tags = OptimizationTags.System | OptimizationTags.Performance | OptimizationTags.Latency
+    )]
+    public sealed class DisableStartMenuWebSearch : BaseOptimization
+    {
+        public override Task<ApplyResult> ApplyAsync(
+            IProgress<ProcessingProgress> progress,
+            OptimizationContext context
+        )
+        {
+            RegistryService.Write(
+                context,
+                new RegistryItem(
+                    @"HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Explorer",
+                    "DisableSearchBoxSuggestions",
+                    1
+                )
+            );
+            context.Logger.LogInformation("Disabled web search for Start Menu");
+            return Task.FromResult(context.Changes.ToApplyResult());
+        }
+    }
+
+    [Optimization(
+        Id = "31A6274C-AD37-4FFA-A32E-727FB71AD085",
+        Risk = OptimizationRisk.Safe,
+        Tags = OptimizationTags.Privacy | OptimizationTags.Visual | OptimizationTags.Windows11Only,
+        Condition = typeof(Windows11Condition)
+    )]
+    public sealed class DisableStartRecommended : BaseOptimization
+    {
+        public override Task<ApplyResult> ApplyAsync(
+            IProgress<ProcessingProgress> progress,
+            OptimizationContext context
+        )
+        {
+            RegistryService.Write(
+                context,
+                new RegistryItem(
+                    @"HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\Explorer",
+                    "HideRecommendedSection",
+                    1
+                )
+            );
+            context.Logger.LogInformation("Disabled Recommended section in Start Menu");
+            return Task.FromResult(context.Changes.ToApplyResult());
+        }
+    }
+
+    [Optimization(
+        Id = "B36652B1-D094-4D39-BEB8-7961E6094A2E",
+        Risk = OptimizationRisk.Safe,
+        Tags = OptimizationTags.Visual | OptimizationTags.Privacy
+    )]
+    public sealed class DisableSettings365Ads : BaseOptimization
+    {
+        public override Task<ApplyResult> ApplyAsync(
+            IProgress<ProcessingProgress> progress,
+            OptimizationContext context
+        )
+        {
+            RegistryService.Write(
+                context,
+                new RegistryItem(
+                    @"HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent",
+                    "DisableConsumerAccountStateContent",
+                    1
+                )
+            );
+            context.Logger.LogInformation("Disabled Microsoft 365 ads in Settings");
+            return Task.FromResult(context.Changes.ToApplyResult());
+        }
+    }
+
+    [Optimization(
+        Id = "3F8B91D2-6A47-4E05-9C2B-E70D14F8A5C6",
+        Risk = OptimizationRisk.Safe,
+        Tags = OptimizationTags.System | OptimizationTags.Network
+    )]
+    public sealed class MaximizeUpdatePauseLimit : BaseOptimization
+    {
+        public override Task<ApplyResult> ApplyAsync(
+            IProgress<ProcessingProgress> progress,
+            OptimizationContext context
+        )
+        {
+            // DWORD maximum; only honored by Windows versions that still support this setting
+            RegistryService.Write(
+                context,
+                new RegistryItem(
+                    @"HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings",
+                    "FlightSettingsMaxPauseDays",
+                    unchecked((int)0xFFFFFFFF),
+                    RegistryValueKind.DWord
+                )
+            );
+
+            context.Logger.LogInformation("Maximized the Windows Update pause limit");
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 }

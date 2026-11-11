@@ -1,18 +1,20 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
+using optimizerDuck.Common.Extensions;
 using optimizerDuck.Domain.Abstractions;
 using optimizerDuck.Domain.Attributes;
+using optimizerDuck.Domain.Execution;
 using optimizerDuck.Domain.Optimizations.Models;
 using optimizerDuck.Domain.Optimizations.Models.Services;
 using optimizerDuck.Domain.UI;
-using optimizerDuck.Services.Managers;
-using optimizerDuck.Services.OptimizationServices;
-using optimizerDuck.UI.Pages.Optimizations;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.System.Primitives;
+using optimizerDuck.UI.Pages.Optimize.Categories;
 
 namespace optimizerDuck.Domain.Optimizations.Categories;
 
 [OptimizationCategory(typeof(BloatwareAndServicesOptimizerPage))]
-public class BloatwareAndServices : IOptimizationCategory
+public class BloatwareAndServices : LocalizedObject, IOptimizationCategory
 {
     public string Name => Loc.Instance[$"Optimizer.{nameof(BloatwareAndServices)}"];
     public OptimizationCategoryOrder Order { get; init; } =
@@ -32,6 +34,7 @@ public class BloatwareAndServices : IOptimizationCategory
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager",
                     "PreInstalledAppsEnabled",
@@ -54,7 +57,7 @@ public class BloatwareAndServices : IOptimizationCategory
                 )
             );
             context.Logger.LogInformation("Blocked preinstalled apps");
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 
@@ -65,7 +68,7 @@ public class BloatwareAndServices : IOptimizationCategory
     )]
     public class ConfigureServices : BaseOptimization
     {
-        public override Task<ApplyResult> ApplyAsync(
+        public override async Task<ApplyResult> ApplyAsync(
             IProgress<ProcessingProgress> progress,
             OptimizationContext context
         )
@@ -319,24 +322,23 @@ public class BloatwareAndServices : IOptimizationCategory
                 progress?.Report(
                     new ProcessingProgress
                     {
-                        Message = string.Format(
-                            Loc.Instance[$"{ProgressPrefix}.ChangeServiceStartupType"],
+                        Message = Loc.Instance[
+                            $"{ProgressPrefix}.ChangeServiceStartupType",
                             service.Name,
                             service.StartupType
-                        ),
-                        IsIndeterminate = false,
+                        ],
                         Value = i + 1,
                         Total = servicesToChange.Count,
                     }
                 );
-                ServiceProcessService.ChangeServiceStartupType(service);
+                await ServiceProcessService.ChangeServiceStartupTypeAsync(context, service);
             }
 
             context.Logger.LogInformation(
-                "Optimized service startup for {Count} services",
+                "Service startup configuration: {Total} services applied",
                 servicesToChange.Count
             );
-            return Task.FromResult(ApplyResult.True());
+            return context.Changes.ToApplyResult();
         }
     }
 }

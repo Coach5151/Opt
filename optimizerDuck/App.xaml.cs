@@ -12,9 +12,14 @@ using optimizerDuck.Common.Extensions;
 using optimizerDuck.Common.Helpers;
 using optimizerDuck.Domain.Configuration;
 using optimizerDuck.Resources.Languages;
-using optimizerDuck.Services;
-using optimizerDuck.Services.Managers;
-using optimizerDuck.Services.OptimizationServices;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.Customize;
+using optimizerDuck.Services.Optimization;
+using optimizerDuck.Services.Revert;
+using optimizerDuck.Services.System;
+using optimizerDuck.Services.System.Primitives;
+using optimizerDuck.Services.UI;
+using optimizerDuck.UI.Behaviors;
 using optimizerDuck.UI.Pages;
 using optimizerDuck.UI.ViewModels.Pages;
 using optimizerDuck.UI.ViewModels.Windows;
@@ -35,7 +40,6 @@ public class ScopeBlockTextFormatter : ITextFormatter
 {
     public void Format(LogEvent logEvent, TextWriter output)
     {
-        // build prefix
         var timestamp = $"{logEvent.Timestamp:yyyy-MM-dd HH:mm:ss}";
         var ctx = logEvent.Properties.TryGetValue("SourceContext", out var sourceContext)
             ? sourceContext is ScalarValue { Value: string s }
@@ -54,12 +58,10 @@ public class ScopeBlockTextFormatter : ITextFormatter
         };
 
         //var prefix = $"{timestamp} | {ctx,-67} | {levelText,-7} | "; // byebye 67 char SourceContext truncation, we have a new design now...
-        var prefix = $"{timestamp} | {ctx,-35} | {levelText,-7} | ";
+        var prefix = $"{timestamp} | {ctx, -35} | {levelText, -7} | ";
 
-        // print message
         output.WriteLine(prefix + RenderWithoutQuotes(logEvent));
 
-        // print property
         foreach (var kvp in logEvent.Properties)
         {
             if (kvp.Key == "SourceContext")
@@ -95,10 +97,8 @@ public class ScopeBlockTextFormatter : ITextFormatter
             )
             {
                 if (value is ScalarValue { Value: string s })
-                    // write string without quotes
                     output.Write(s);
                 else
-                    // use default rendering for other types
                     pt.Render(logEvent.Properties, output);
             }
             else
@@ -113,48 +113,213 @@ public class ScopeBlockTextFormatter : ITextFormatter
 public partial class App : Application
 {
     private IHost? _host;
+
+    public IHost? AppHost => _host;
     private ILogger<App> _logger = null!;
     private bool _allowClose;
     private IContentDialogService? _contentDialogService = null;
 
-    public bool HasPendingChanges { get; set; }
+    private bool _hasPendingChanges;
 
-    protected override async void OnStartup(StartupEventArgs e)
+    public bool HasPendingChanges
+    {
+        get => _hasPendingChanges;
+        set
+        {
+            if (_hasPendingChanges == value)
+                return;
+            _hasPendingChanges = value;
+            Dispatcher.InvokeAsync(() =>
+            {
+                if (Current.MainWindow is MainWindow mw)
+                    mw.UpdatePendingIndicator(value);
+            });
+        }
+    }
+
+    protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
+
+        _ = SafeFireAndForgetAsync(() => OnStartupAsync(e));
+    }
+
+    /// <summary>
+    ///     Applies the duck-yellow accent palette tuned for the given theme. Light
+    ///     uses deeper honey tones so accent text and fills stay readable on white;
+    ///     dark keeps the brighter golden tones. Centralized so startup and theme
+    ///     switches always use the same palettes.
+    /// </summary>
+    internal static void ApplyAccentFor(ApplicationTheme theme)
+    {
+        if (theme == ApplicationTheme.Dark)
+        {
+            ApplicationAccentColorManager.Apply(
+                systemAccent: Color.FromRgb(216, 155, 29),
+                primaryAccent: Color.FromRgb(235, 193, 94),
+                secondaryAccent: Color.FromRgb(255, 247, 200),
+                tertiaryAccent: Color.FromRgb(255, 243, 131)
+            );
+            RefreshToggleSwitchBrushes();
+            return;
+        }
+
+        ApplicationAccentColorManager.Apply(
+            systemAccent: Color.FromRgb(138, 94, 0),
+            primaryAccent: Color.FromRgb(138, 94, 0),
+            secondaryAccent: Color.FromRgb(122, 88, 0),
+            tertiaryAccent: Color.FromRgb(110, 75, 0)
+        );
+        RefreshToggleSwitchBrushes();
+    }
+
+    private static void RefreshToggleSwitchBrushes()
+    {
+        var app = Application.Current;
+        if (app == null)
+            return;
+
+        Color GetColor(string key, Color fallback) =>
+            app.Resources[key] is Color color ? color : fallback;
+
+        var primary = GetColor("SystemAccentColorPrimary", Color.FromRgb(235, 193, 94));
+        var secondary = GetColor("AccentFillColorSecondary", Color.FromRgb(255, 247, 200));
+        var tertiary = GetColor("AccentFillColorTertiary", Color.FromRgb(255, 243, 131));
+        var knobOn = GetColor("TextOnAccentFillColorPrimary", Colors.White);
+
+        app.Resources["ToggleSwitchFillOn"] = new SolidColorBrush(primary);
+        app.Resources["ToggleSwitchFillOnPointerOver"] = new SolidColorBrush(secondary);
+        app.Resources["ToggleSwitchFillOnPressed"] = new SolidColorBrush(tertiary);
+        app.Resources["ToggleSwitchStrokeOn"] = new SolidColorBrush(primary);
+        app.Resources["ToggleSwitchStrokeOnPointerOver"] = new SolidColorBrush(secondary);
+        app.Resources["ToggleSwitchStrokeOnPressed"] = new SolidColorBrush(tertiary);
+        app.Resources["ToggleSwitchKnobFillOn"] = new SolidColorBrush(knobOn);
+        app.Resources["ToggleSwitchKnobFillOnPointerOver"] = new SolidColorBrush(knobOn);
+        app.Resources["ToggleSwitchKnobFillOnPressed"] = new SolidColorBrush(knobOn);
+    }
+
+    private static async Task SafeFireAndForgetAsync(Func<Task> taskFactory)
+    {
         try
         {
-            await OnStartupAsync(e);
+            await taskFactory();
         }
         catch (Exception ex)
         {
             try
             {
-                Log.Logger?.Fatal(ex, "Fatal error during startup");
-                await Log.CloseAndFlushAsync();
+                await HandleStartupErrorStaticAsync(ex);
             }
-            catch
-            {
-                // ignore logging failures during fatal startup handling
-            }
+            catch { }
+        }
+    }
 
+    private static async Task HandleStartupErrorStaticAsync(Exception ex)
+    {
+        LogExceptionToFile("App.Startup", ex);
+
+        try
+        {
+            Log.Logger?.Fatal(ex, "Fatal error during startup");
+            await Log.CloseAndFlushAsync();
+        }
+        catch
+        {
+            // ignore logging failures during fatal startup handling
+        }
+
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
             System.Windows.MessageBox.Show(
                 $"Failed to start optimizerDuck.{Environment.NewLine}{Environment.NewLine}{ex.Message}",
                 "optimizerDuck",
                 System.Windows.MessageBoxButton.OK,
                 MessageBoxImage.Error
             );
-            Shutdown(-1);
+            Application.Current.Shutdown(-1);
+        });
+    }
+
+    private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        var ex = e.ExceptionObject as Exception ?? new Exception(e.ExceptionObject?.ToString());
+        LogExceptionToFile("AppDomain.UnhandledException", ex);
+        Log.Logger?.Fatal(
+            ex,
+            "Unhandled AppDomain exception. IsTerminating={IsTerminating}",
+            e.IsTerminating
+        );
+    }
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        LogExceptionToFile("UnobservedTaskException", e.Exception);
+        Log.Logger?.Error(e.Exception, "Unobserved task exception");
+        e.SetObserved();
+    }
+
+    private void OnDispatcherUnhandledException(
+        object sender,
+        System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e
+    )
+    {
+        LogExceptionToFile("DispatcherUnhandledException", e.Exception);
+        Log.Logger?.Error(e.Exception, "Unhandled UI dispatcher exception");
+
+        // The exception is swallowed below, so the user is told about it here.
+        try
+        {
+            _host?.Services.GetService<UserErrorSurface>()?.TryReport(e.Exception);
+        }
+        catch (Exception ex)
+        {
+            Log.Logger?.Warning(ex, "Could not report the unhandled exception to the user");
+        }
+
+        e.Handled = true;
+    }
+
+    private static void LogExceptionToFile(string category, Exception ex)
+    {
+        try
+        {
+            var crashDir = Path.Combine(Shared.RootDirectory, "Crashes");
+            Directory.CreateDirectory(crashDir);
+            var crashFile = Path.Combine(
+                crashDir,
+                $"crash_{DateTime.Now:yyyy-MM-dd_HH-mm-ss-fff}.log"
+            );
+            File.WriteAllText(
+                crashFile,
+                $"""
+                [{category}] {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}
+                Type: {ex.GetType().FullName}
+                Message: {ex.Message}
+                StackTrace:
+                {ex.StackTrace}
+
+                {(ex.InnerException is not null ? $"Inner: {ex.InnerException}" : "")}
+                """
+            );
+        }
+        catch
+        {
+            // cannot do anything if crash logging itself fails
         }
     }
 
     private async Task OnStartupAsync(StartupEventArgs e)
     {
-        // Create the required directories if they don't exist
-        Directory.CreateDirectory(Shared.ResourcesDirectory);
         Directory.CreateDirectory(Shared.RootDirectory);
+        Directory.CreateDirectory(Shared.ResourcesDirectory);
+        Directory.CreateDirectory(Shared.DownloadsDirectory);
+        Directory.CreateDirectory(Shared.AssetsDirectory);
         Directory.CreateDirectory(Shared.RevertDirectory);
+        Directory.CreateDirectory(Shared.HistoryDirectory);
 
         var logPath = Path.Combine(Shared.RootDirectory, "optimizerDuck.log");
         Log.Logger = new LoggerConfiguration()
@@ -168,94 +333,47 @@ public partial class App : Application
             )
             .CreateLogger();
 
-        _host = Host.CreateDefaultBuilder()
+        _host = Microsoft
+            .Extensions.Hosting.Host.CreateDefaultBuilder()
             .UseSerilog()
             .ConfigureAppConfiguration(c =>
             {
-                ConfigManager.ValidateConfig();
+                using var loggerFactory = LoggerFactory.Create(b => b.AddSerilog(Log.Logger));
+                ConfigManager.ValidateConfig(loggerFactory.CreateLogger(typeof(ConfigManager)));
                 c.AddJsonFile(Path.Combine(Shared.RootDirectory, "appsettings.json"), false, true);
             })
+            // Fail fast instead of discovering a broken graph later: ValidateOnBuild catches
+            // an unbuildable registration, ValidateScopes catches a scoped service leaking
+            // into a singleton (the ChangeSet must never be resolved from the root provider).
+            .UseDefaultServiceProvider(options =>
+            {
+                options.ValidateOnBuild = true;
+                options.ValidateScopes = true;
+            })
             .ConfigureServices(
-                (context, services) =>
-                {
-                    services.Configure<AppSettings>(context.Configuration);
-
-                    // WPF UI shi
-                    services.AddNavigationViewPageProvider();
-                    services.AddSingleton<INavigationService, NavigationService>();
-                    services.AddSingleton<IContentDialogService, ContentDialogService>();
-                    services.AddSingleton<ISnackbarService, SnackbarService>();
-
-                    // Windows
-                    services.AddSingleton<MainWindow>();
-                    services.AddSingleton<MainWindowViewModel>();
-
-                    // Pages
-                    services.AddSingleton<DashboardViewModel>();
-                    services.AddSingleton<DashboardPage>();
-
-                    services.AddSingleton<OptimizeViewModel>();
-                    services.AddSingleton<OptimizePage>();
-
-                    services.AddSingleton<SettingsViewModel>();
-                    services.AddSingleton<SettingsPage>();
-
-                    services.AddSingleton<BloatwareViewModel>();
-                    services.AddSingleton<BloatwarePage>();
-
-                    services.AddSingleton<DiskCleanupViewModel>();
-                    services.AddSingleton<DiskCleanupPage>();
-
-                    services.AddSingleton<StartupManagerViewModel>();
-                    services.AddSingleton<StartupManagerPage>();
-
-                    services.AddSingleton<ScheduledTasksViewModel>();
-                    services.AddSingleton<ScheduledTasksPage>();
-
-                    // Toggle Features
-                    services.AddSingleton<FeaturesViewModel>();
-                    services.AddSingleton<FeaturesPage>();
-
-                    services.AddAllFeaturesCategoryPages();
-
-                    // Optimizations
-                    services.AddAllOptimizationPages();
-
-                    // Managers
-                    services.AddSingleton<ConfigManager>();
-                    services.AddSingleton<RevertManager>();
-
-                    // Services
-                    services.AddSingleton<OptimizationRegistry>();
-                    services.AddSingleton<FeatureRegistry>();
-                    services.AddSingleton<OptimizationService>();
-                    services.AddSingleton<BloatwareService>();
-                    services.AddSingleton<DiskCleanupService>();
-                    services.AddSingleton<StartupManagerService>();
-                    services.AddSingleton<SystemInfoService>();
-                    services.AddSingleton<StreamService>();
-                    services.AddSingleton<UpdaterService>();
-                }
+                (context, services) => services.AddOptimizerApplication(context.Configuration)
             )
             .Build();
 
-        await _host.StartAsync().ConfigureAwait(false);
+        await _host.StartAsync();
 
         var config = _host.Services.GetRequiredService<ConfigManager>();
-        await config.InitializeAsync().ConfigureAwait(false);
-        await config.EnsureDefaultsAsync().ConfigureAwait(false);
+        await config.InitializeAsync();
+        await config.EnsureDefaultsAsync();
 
         var appOptionsMonitor = _host.Services.GetRequiredService<IOptionsMonitor<AppSettings>>();
-
-        // init shell service with config
-        ShellService.Init(appOptionsMonitor);
 
         // init WMI helper for cleanup on abnormal termination
         WmiHelper.Initialize();
 
         var appSettings = appOptionsMonitor.CurrentValue;
 
-        Loc.Instance.ChangeCulture(new CultureInfo(appSettings.App.Language));
+        SmoothScrollBehavior.GlobalEnabled = appSettings.Optimize.SmoothScrolling;
+
+        await Dispatcher.InvokeAsync(() =>
+        {
+            Loc.Instance.ChangeCulture(new CultureInfo(appSettings.App.Language));
+        });
 
         _logger = _host.Services.GetRequiredService<ILogger<App>>();
         _logger.LogInformation(
@@ -266,19 +384,11 @@ public partial class App : Application
         _logger.LogInformation("Loaded language: {Language}", appSettings.App.Language);
 
         var optimizationRegistry = _host.Services.GetRequiredService<OptimizationRegistry>();
-        _logger.LogInformation("Preloading optimizations...");
-        await optimizationRegistry.PreloadOptimizations().ConfigureAwait(false);
 
-        // Apply custom accent colors and theme on UI thread
         await Dispatcher.InvokeAsync(() =>
         {
-            ApplicationAccentColorManager.Apply(
-                Color.FromRgb(254, 209, 20),
-                Color.FromRgb(242, 124, 20),
-                Color.FromRgb(254, 209, 20),
-                Color.FromRgb(242, 124, 20)
-            );
-
+            // Theme first: ApplyAccentFor reads GetAppTheme() cache to pick
+            // AccentFillColorDefault (secondary for Dark, primary for Light).
             ApplicationThemeManager.Apply(
                 appSettings.App.Theme switch
                 {
@@ -288,11 +398,22 @@ public partial class App : Application
                 },
                 updateAccent: false
             );
+            ApplyAccentFor(appSettings.App.Theme);
 
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             mainWindow.Closing += MainWindow_Closing;
             mainWindow.Show();
         });
+
+        _logger.LogInformation("Preloading optimizations and customize settings...");
+        var customizeRegistry = _host.Services.GetRequiredService<CustomizeRegistry>();
+        await Task.WhenAll(
+                optimizationRegistry.PreloadOptimizationsAsync(),
+                customizeRegistry.PreloadCategoriesAsync()
+            )
+            .ConfigureAwait(false);
+
+        RevertManager.RemoveOrphanedTempFiles(_logger);
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -301,84 +422,81 @@ public partial class App : Application
         {
             if (_host != null)
             {
-                _host.StopAsync().GetAwaiter().GetResult();
+                try
+                {
+                    _host.StopAsync().Wait(TimeSpan.FromSeconds(2));
+                }
+                catch (Exception ex)
+                {
+                    LogExceptionToFile("App.OnExit.StopAsync", ex);
+                }
                 _host.Dispose();
             }
 
-            // Dispose WMI scopes to prevent resource leaks
             WmiHelper.DisposeScopes();
-
             Log.CloseAndFlush();
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently ignore exit errors to prevent blocking shutdown
+            LogExceptionToFile("App.OnExit", ex);
         }
 
         base.OnExit(e);
     }
 
-    protected async void MainWindow_Closing(object? sender,
-        CancelEventArgs e)
+    protected async void MainWindow_Closing(object? sender, CancelEventArgs e)
     {
-        if (_allowClose)
-        {
-            return;
-        }
-
-        if (!HasPendingChanges)
-        {
-            return;
-        }
-
-        e.Cancel = true;
-
         try
         {
-            _contentDialogService ??=
-                _host!.Services.GetRequiredService<IContentDialogService>();
+            if (_allowClose)
+            {
+                return;
+            }
+
+            if (!HasPendingChanges)
+            {
+                return;
+            }
+
+            e.Cancel = true;
+
+            _contentDialogService ??= _host!.Services.GetRequiredService<IContentDialogService>();
 
             var result = await _contentDialogService.ShowSimpleDialogAsync(
                 new SimpleContentDialogCreateOptions
                 {
-                    Title = Translations.Dialog_PendingChanges_Title,
-                    Content = Translations.Dialog_PendingChanges_Content,
-                    CloseButtonText =
-                        Translations.Dialog_PendingChanges_CloseButton,
-                    PrimaryButtonText =
-                        Translations.Dialog_PendingChanges_PrimaryButton,
-                    SecondaryButtonText =
-                        Translations.Dialog_PendingChanges_SecondaryButton
+                    Title = Loc.Instance["Dialog.PendingChanges.Title"],
+                    Content = Loc.Instance["Dialog.PendingChanges.Content"],
+                    CloseButtonText = Loc.Instance["Dialog.PendingChanges.CloseButton"],
+                    PrimaryButtonText = Loc.Instance["Dialog.PendingChanges.PrimaryButton"],
+                    SecondaryButtonText = Loc.Instance["Dialog.PendingChanges.SecondaryButton"],
                 }
             );
 
             switch (result)
             {
                 case ContentDialogResult.Primary:
-                    _logger.LogInformation(
-                        "User chose to restart PC."
-                    );
+                    _logger.LogInformation("User chose to restart PC.");
 
-                    ShellService.CMD("shutdown /r /t 0");
+                    await _host!
+                        .Services.GetRequiredService<ShellService>()
+                        .QueryCMDAsync("shutdown /r /t 0");
+                    _allowClose = true;
+                    Current.Shutdown();
                     break;
 
                 case ContentDialogResult.Secondary:
-                    _logger.LogInformation(
-                        "User chose to restart Explorer."
-                    );
+                    _logger.LogInformation("User chose to restart Explorer.");
 
-                    ShellService.CMD(
-                        "taskkill /f /im explorer.exe && start explorer.exe"
-                    );
-
+                    await _host!
+                        .Services.GetRequiredService<ShellService>()
+                        .QueryCMDAsync("taskkill /f /im explorer.exe && start explorer.exe");
                     _allowClose = true;
                     Current.Shutdown();
                     break;
 
                 case ContentDialogResult.None:
-                    _logger.LogInformation(
-                        "User chose to exit without applying changes."
-                    );
+                    _logger.LogInformation("User chose to exit without applying changes.");
 
                     _allowClose = true;
                     Current.Shutdown();
@@ -389,11 +507,12 @@ public partial class App : Application
         {
             _logger.LogError(
                 ex,
-                "Failed to show pending changes dialog."
+                "Failed to handle window closing event. Allowing close to prevent hanging."
             );
 
+            // Ensure we don't block close on error
             _allowClose = true;
-            Current.Shutdown();
+            e.Cancel = false;
         }
     }
 }

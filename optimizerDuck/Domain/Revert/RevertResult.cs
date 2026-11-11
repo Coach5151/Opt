@@ -1,34 +1,38 @@
-﻿using optimizerDuck.Domain.Optimizations.Models;
+﻿using optimizerDuck.Domain.Execution;
 
 namespace optimizerDuck.Domain.Revert;
 
 /// <summary>
-///     Represents the result of a revert operation.
+///     Represents the result of a revert operation, including success status,
+///     a human-readable message, and details about any steps that failed.
 /// </summary>
 public class RevertResult
 {
     /// <summary>
-    ///     Indicates whether the revert was successful.
+    ///     Gets or sets a value that indicates whether the revert was fully successful.
     /// </summary>
     public bool Success { get; set; }
 
     /// <summary>
-    ///     A message describing the result.
+    ///     Gets or sets a human-readable message describing the result.
     /// </summary>
     public string Message { get; set; } = string.Empty;
 
     /// <summary>
-    ///     The exception that occurred, if any.
+    ///     Gets or sets the list of steps that failed during the revert operation.
     /// </summary>
-    public Exception? Exception { get; set; }
+    public List<Change> FailedSteps { get; set; } = [];
 
     /// <summary>
-    ///     Details of any steps that failed during revert.
-    /// </summary>
-    public List<OperationStepResult> FailedSteps { get; set; } = [];
-
-    /// <summary>
-    ///     Indicates whether the revert failed completely (all steps failed).
+    ///     Gets or sets a value that indicates whether the revert failed completely
+    ///     (that is, all individual steps failed).
     /// </summary>
     public bool AllStepsFailed { get; set; }
+
+    /// <summary>
+    ///     Gets or sets a value that indicates whether the steps ran but the revert data could
+    ///     not be cleaned up, for example because the file lock timed out. The leftover file is
+    ///     retried on the next revert.
+    /// </summary>
+    public bool CleanupFailed { get; set; }
 }

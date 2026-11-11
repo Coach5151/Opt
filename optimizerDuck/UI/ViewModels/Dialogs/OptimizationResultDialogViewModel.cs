@@ -1,17 +1,26 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using optimizerDuck.Domain.Optimizations.Models;
+using optimizerDuck.Common.Extensions;
+using optimizerDuck.Domain.Execution;
 
 namespace optimizerDuck.UI.ViewModels.Dialogs;
 
-public class OptimizationResultDialogViewModel : ObservableObject
+public class OptimizationResultDialogViewModel : LocalizedObject
 {
-    public OptimizationResultDialogViewModel(IEnumerable<OperationStepResult> failedSteps)
+    public OptimizationResultDialogViewModel(
+        IEnumerable<Change> failedSteps,
+        ChangeRecordOperation operation = ChangeRecordOperation.Apply
+    )
     {
-        FailedSteps = new ObservableCollection<OperationStepResult>(failedSteps);
+        // The rows are built here so a failure list reads in the UI language, falling back to the
+        // English log text only when a step carries nothing else to show. The run the steps
+        // belong to decides whether they read as applied or as put back.
+        FailedSteps = new ObservableCollection<ChangeRecordStepViewModel>(
+            failedSteps.Select(step => new ChangeRecordStepViewModel(step, operation))
+        );
     }
 
-    public ObservableCollection<OperationStepResult> FailedSteps { get; }
+    public ObservableCollection<ChangeRecordStepViewModel> FailedSteps { get; }
 
     public int FailedCount => FailedSteps.Count;
 }

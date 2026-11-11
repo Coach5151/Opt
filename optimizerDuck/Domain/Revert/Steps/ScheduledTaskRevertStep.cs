@@ -1,22 +1,28 @@
-﻿using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using optimizerDuck.Domain.Abstractions;
-using optimizerDuck.Resources.Languages;
-using optimizerDuck.Services.OptimizationServices;
+using optimizerDuck.Domain.Exceptions;
+using optimizerDuck.Domain.Execution;
+using optimizerDuck.Domain.Optimizations.Models.ScheduledTask;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.System.Primitives;
 
 namespace optimizerDuck.Domain.Revert.Steps;
 
 /// <summary>
-///     Represents a revert step that restores a scheduled task to its original enabled/disabled state.
+///     Represents a revert step that restores a scheduled task to its original
+///     enabled/disabled state.
 /// </summary>
 public class ScheduledTaskRevertStep : IRevertStep
 {
     /// <summary>
-    ///     The full path of the scheduled task (e.g., \Microsoft\Windows\...).
+    ///     Gets or sets the full path of the scheduled task (e.g., <c>\Microsoft\Windows\...</c>).
     /// </summary>
     public string FullPath { get; set; } = string.Empty;
 
     /// <summary>
-    ///     Whether the task was originally enabled before the optimization.
+    ///     Gets or sets a value that indicates whether the task was originally enabled
+    ///     before the optimization.
     /// </summary>
     public bool OriginalEnabled { get; set; }
 
@@ -25,24 +31,37 @@ public class ScheduledTaskRevertStep : IRevertStep
 
     /// <inheritdoc />
     public string Description =>
-        string.Format(
-            OriginalEnabled
-                ? Translations.Revert_ScheduledTask_Description_Enable
-                : Translations.Revert_ScheduledTask_Description_Disable,
-            FullPath
-        );
+        OriginalEnabled
+            ? Loc.Instance["Revert.ScheduledTask.Description.Enable", FullPath]
+            : Loc.Instance["Revert.ScheduledTask.Description.Disable", FullPath];
 
     /// <inheritdoc />
-    public async Task<bool> ExecuteAsync()
+    public Task<bool> ExecuteAsync(RevertContext _, ILogger logger)
     {
-        return await Task.Run(() =>
-        {
-            if (OriginalEnabled)
-                ScheduledTaskService.EnableTask(FullPath);
-            else
-                ScheduledTaskService.DisableTask(FullPath);
-            return true;
-        });
+        var opCall = new OpCall { Logger = logger };
+        var result = OriginalEnabled
+            ? ScheduledTaskService.EnableTask(opCall, FullPath)
+            : ScheduledTaskService.DisableTask(opCall, FullPath);
+
+        if (!result.Ok)
+            throw new StepExecutionException(result.Error ?? Description, result.ErrorDetail);
+
+        // a missing task has nothing to restore; anything else must verify positively.
+        var state = ScheduledTaskService.GetTaskEnabledState(FullPath, opCall.Logger);
+        if (state is TaskEnabledState.NotFound)
+            return Task.FromResult(true);
+        if (state is not (TaskEnabledState.Enabled or TaskEnabledState.Disabled))
+            throw new StepExecutionException(
+                $"Scheduled task verify failed at {FullPath}: could not query the task state.",
+                null
+            );
+        if ((state == TaskEnabledState.Enabled) != OriginalEnabled)
+            throw new StepExecutionException(
+                $"Scheduled task verify failed at {FullPath}: expected enabled={OriginalEnabled}, actual={state == TaskEnabledState.Enabled}",
+                null
+            );
+
+        return Task.FromResult(true);
     }
 
     /// <inheritdoc />
@@ -62,10 +81,16 @@ public class ScheduledTaskRevertStep : IRevertStep
     /// <returns>A new <see cref="ScheduledTaskRevertStep" /> instance.</returns>
     public static ScheduledTaskRevertStep FromData(JObject data)
     {
+        var enabledToken = data[nameof(OriginalEnabled)];
+        if (enabledToken == null || enabledToken.Type == JTokenType.Null)
+            throw new StepExecutionException(
+                $"Missing required '{nameof(OriginalEnabled)}' in scheduled-task revert data.",
+                data.ToString()
+            );
         return new ScheduledTaskRevertStep
         {
             FullPath = data[nameof(FullPath)]?.ToString() ?? string.Empty,
-            OriginalEnabled = data[nameof(OriginalEnabled)]?.Value<bool>() ?? true,
+            OriginalEnabled = enabledToken.Value<bool>(),
         };
     }
 }

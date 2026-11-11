@@ -1,191 +1,273 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using optimizerDuck.Domain.Abstractions;
 using optimizerDuck.Domain.Execution;
-using optimizerDuck.Domain.Optimizations.Models;
-using optimizerDuck.Domain.UI;
-using OptimizationState = optimizerDuck.Domain.UI.OptimizationState;
+using optimizerDuck.Services.System.Primitives;
 
 namespace optimizerDuck.Test.Services;
 
-public class ExecutionScopeTests
+public class ChangeSetTests
 {
     [Fact]
-    public void RecordStep_WithSuccessfulStep_RecordsStep()
+    public void Add_WithSuccessfulChange_RecordsChange()
     {
-        var logger = NullLogger.Instance;
+        var changes = new ChangeSet();
 
-        using var scope = ExecutionScope.Begin(new MockOptimization(), logger);
+        changes.Add("TestStep", "Test description", true);
 
-        ExecutionScope.RecordStep("TestStep", "Test description", true);
-
-        Assert.Single(scope.ExecutedSteps);
-        Assert.True(scope.HasSuccessfulSteps);
-        Assert.Equal("TestStep", scope.ExecutedSteps[0].Name);
+        Assert.Single(changes.Changes);
+        Assert.True(changes.HasSuccessfulSteps);
+        Assert.Equal("TestStep", changes.Changes[0].Name);
+        Assert.Equal(1, changes.Changes[0].Index);
     }
 
     [Fact]
-    public void RecordStep_WithFailedStep_RecordsFailedStep()
+    public void Add_WithFailedChange_RecordsError()
     {
-        var logger = NullLogger.Instance;
+        var changes = new ChangeSet();
 
-        using var scope = ExecutionScope.Begin(new MockOptimization(), logger);
+        changes.Add("TestStep", "Test description", false, error: "Test error");
 
-        ExecutionScope.RecordStep("TestStep", "Test description", false, error: "Test error");
-
-        Assert.Single(scope.ExecutedSteps);
-        Assert.False(scope.ExecutedSteps[0].Success);
-        Assert.False(scope.HasSuccessfulSteps);
-        Assert.Equal("Test error", scope.ExecutedSteps[0].Error);
+        Assert.Single(changes.Changes);
+        Assert.False(changes.Changes[0].Ok);
+        Assert.False(changes.HasSuccessfulSteps);
+        Assert.Equal("Test error", changes.Changes[0].Error);
     }
 
     [Fact]
-    public void RecordStep_WithRevertStep_RecordsRevertData()
+    public void Add_WithRevertStep_StoresRevertData()
     {
-        var logger = NullLogger.Instance;
+        var changes = new ChangeSet();
         var revertStep = new MockRevertStep();
 
-        using var scope = ExecutionScope.Begin(new MockOptimization(), logger);
+        changes.Add("TestStep", "Test description", true, revertStep);
 
-        ExecutionScope.RecordStep("TestStep", "Test description", true, revertStep);
-
-        Assert.Single(scope.SuccessfulSteps);
-        Assert.NotNull(scope.SuccessfulSteps[0].RevertStep);
+        Assert.Single(changes.SuccessfulSteps);
+        Assert.NotNull(changes.SuccessfulSteps[0].Revert);
     }
 
     [Fact]
-    public void FailedSteps_ReturnsOnlyFailedSteps()
+    public void DidApplyAnything_CountsAFailedStepThatCarriesCompensation()
     {
-        var logger = NullLogger.Instance;
+        var changes = new ChangeSet();
 
-        using var scope = ExecutionScope.Begin(new MockOptimization(), logger);
+        changes.Add(
+            "USB power",
+            "Two devices changed, a third refused",
+            false,
+            new MockRevertStep(),
+            "a device refused the write"
+        );
 
-        ExecutionScope.RecordStep("SuccessStep1", "Description", true);
-        ExecutionScope.RecordStep("FailedStep", "Description", false, error: "Error");
-        ExecutionScope.RecordStep("SuccessStep2", "Description", true);
+        // The step changed the machine, so what it recorded is what a revert runs on.
+        Assert.True(changes.DidApplyAnything);
+        Assert.False(changes.HasSuccessfulSteps);
+    }
 
-        var failedSteps = scope.FailedSteps;
+    [Fact]
+    public void DidApplyAnything_IgnoresAFailedStepWithoutCompensation()
+    {
+        var changes = new ChangeSet();
+
+        changes.Add("Service", "Change startup type", false, error: "access denied");
+
+        Assert.False(changes.DidApplyAnything);
+    }
+
+    [Fact]
+    public void ModifiedSystem_IgnoresStepsThatWroteNothing()
+    {
+        var changes = new ChangeSet();
+
+        changes.AddSkip("Service", "already set");
+        changes.AddNotApplicable("Service", "not present");
+        changes.AddRefused("Service", "protected");
+
+        // Nothing was written, so the run reports nothing to do rather than a change.
+        Assert.False(changes.ModifiedSystem);
+    }
+
+    [Fact]
+    public void ModifiedSystem_CountsAChange()
+    {
+        var changes = new ChangeSet();
+
+        changes.Add("Registry", "wrote a value", true, new MockRevertStep());
+
+        Assert.True(changes.ModifiedSystem);
+
+        // A write whose compensation the provider forgot still modified the machine: the
+        // compensation guard reports that defect, it does not reclassify the run.
+        var uncompensated = new ChangeSet();
+        uncompensated.Add("Registry", "wrote a value", true);
+
+        Assert.True(uncompensated.ModifiedSystem);
+    }
+
+    [Fact]
+    public void ModifiedSystem_CountsAnIrreversibleAction()
+    {
+        var changes = new ChangeSet();
+
+        changes.AddSkip("Service", "already set");
+        changes.AddIrreversible("Scheduled Task", "deleted a task");
+
+        // Deleting modified the machine, so the run is a success rather than a run that found
+        // nothing to change. It left nothing to undo, which is the one thing the two queries
+        // disagree about.
+        Assert.True(changes.ModifiedSystem);
+        Assert.False(changes.DidApplyAnything);
+    }
+
+    [Fact]
+    public void ModifiedSystem_FollowsCompensationForAFailedChange()
+    {
+        var changes = new ChangeSet();
+
+        changes.Add("Service", "Change startup type", false, error: "access denied");
+
+        Assert.False(changes.ModifiedSystem);
+
+        changes.Add("USB power", "a device changed then refused", false, new MockRevertStep());
+
+        // A step that carries compensation counts as having modified the machine.
+        Assert.True(changes.ModifiedSystem);
+    }
+
+    [Fact]
+    public void FailedSteps_ReturnsOnlyFailedChanges()
+    {
+        var changes = new ChangeSet();
+
+        changes.Add("SuccessStep1", "Description", true);
+        changes.Add("FailedStep", "Description", false, error: "Error");
+        changes.Add("SuccessStep2", "Description", true);
+
+        var failedSteps = changes.FailedSteps;
 
         Assert.Single(failedSteps);
         Assert.Equal("FailedStep", failedSteps[0].Name);
     }
 
     [Fact]
-    public void StepIndex_IncrementsSequentially()
+    public void Add_IncrementsSequenceSequentially()
     {
-        var logger = NullLogger.Instance;
+        var changes = new ChangeSet();
 
-        using var scope = ExecutionScope.Begin(new MockOptimization(), logger);
+        changes.Add("Step1", "Description", true);
+        changes.Add("Step2", "Description", true);
+        changes.Add("Step3", "Description", true);
 
-        ExecutionScope.RecordStep("Step1", "Description", true);
-        ExecutionScope.RecordStep("Step2", "Description", true);
-        ExecutionScope.RecordStep("Step3", "Description", true);
-
-        Assert.Equal(1, scope.ExecutedSteps[0].Index);
-        Assert.Equal(2, scope.ExecutedSteps[1].Index);
-        Assert.Equal(3, scope.ExecutedSteps[2].Index);
+        Assert.Equal(1, changes.Changes[0].Index);
+        Assert.Equal(2, changes.Changes[1].Index);
+        Assert.Equal(3, changes.Changes[2].Index);
     }
 
     [Fact]
-    public void Dispose_ClearsCurrentScope()
+    public void ToApplyResult_Empty_ReturnsSuccess()
     {
-        var logger = NullLogger.Instance;
+        // An item can legitimately match nothing on this machine, so a run that recorded
+        // no step at all is nothing to do, not a failure. A provider that changed
+        // something without recording it is caught by the compensation guard instead.
+        var changes = new ChangeSet();
 
-        var scope = ExecutionScope.Begin(new MockOptimization(), logger);
+        var result = changes.ToApplyResult();
 
-        ExecutionScope.RecordStep("Success", "Description", true);
-        ExecutionScope.RecordStep("Fail", "Description", false);
-
-        Assert.NotNull(ExecutionScope.Current);
-
-        scope.Dispose();
-
-        Assert.Null(ExecutionScope.Current);
+        Assert.Null(result.ErrorMessage);
     }
 
     [Fact]
-    public void Begin_WithLogger_CreatesLightweightScope()
+    public void ToApplyResult_AllFailed_ReturnsFirstError()
     {
-        var logger = NullLogger.Instance;
+        var changes = new ChangeSet();
 
-        using var scope = ExecutionScope.BeginForLogging(logger);
+        changes.Add("Step1", "Desc1", false, error: "err");
+        changes.Add("Step2", "Desc2", false, error: "err2");
 
-        ExecutionScope.RecordStep("TestStep", "Description", true);
+        var result = changes.ToApplyResult();
 
-        Assert.NotNull(ExecutionScope.Current);
-        Assert.Empty(scope.ExecutedSteps);
-        Assert.Equal(Guid.Empty, scope.OptimizationId);
+        Assert.Equal("err", result.ErrorMessage);
     }
 
     [Fact]
-    public void Begin_ThrowsIfAlreadyActive()
+    public void ToApplyResult_PartialSuccess_ReturnsSuccess()
     {
-        var logger = NullLogger.Instance;
+        var changes = new ChangeSet();
 
-        using var scope = ExecutionScope.Begin(new MockOptimization(), logger);
+        changes.Add("Step1", "Desc1", true);
+        changes.Add("Step2", "Desc2", false, error: "err");
 
-        Assert.Throws<InvalidOperationException>(() =>
-            ExecutionScope.Begin(new MockOptimization(), logger)
-        );
+        var result = changes.ToApplyResult();
+
+        Assert.Null(result.ErrorMessage);
+
+        // Successes and failures stay separable.
+        Assert.Single(changes.SuccessfulSteps);
+        Assert.Single(changes.FailedSteps);
+        Assert.True(changes.SuccessfulSteps[0].Ok);
+        Assert.False(changes.FailedSteps[0].Ok);
+        Assert.Equal("err", changes.FailedSteps[0].Error);
     }
 
     [Fact]
-    public void RecordStep_WithoutActiveScope_ReturnsNull()
+    public void Add_Concurrent_IsThreadSafe()
     {
-        var result = ExecutionScope.RecordStep("TestStep", "Description", true);
+        var changes = new ChangeSet();
 
-        Assert.Null(result);
+        Parallel.For(0, 100, i => changes.Add($"Step{i}", "Description", true));
+
+        Assert.Equal(100, changes.Changes.Count);
+        Assert.Equal(100, changes.Changes.Select(c => c.Index).Distinct().Count());
     }
 
     [Fact]
-    public void Track_UpdatesStats()
+    public void AddSkip_RecordsSuccessfulSkipWithoutCompensation()
     {
-        var logger = NullLogger.Instance;
+        var changes = new ChangeSet();
 
-        using var scope = ExecutionScope.Begin(new MockOptimization(), logger);
+        changes.AddSkip("Service", "Service 'x' is already set to Manual (skipped)");
 
-        ExecutionScope.Track("Registry", true);
-        ExecutionScope.Track("Registry", true);
-        ExecutionScope.Track("Registry", false);
-
-        var steps = scope.GetStepResults();
-        Assert.Empty(steps);
+        var change = Assert.Single(changes.Changes);
+        Assert.True(change.Ok);
+        Assert.Equal(ChangeKind.Skip, change.Kind);
+        Assert.Null(change.Revert);
     }
 
     [Fact]
-    public void GetStepResults_ReturnsOperationStepResults()
+    public void AddIrreversible_RecordsOneWayStep()
     {
-        var logger = NullLogger.Instance;
+        var changes = new ChangeSet();
 
-        using var scope = ExecutionScope.Begin(new MockOptimization(), logger);
+        changes.AddIrreversible("Scheduled Task", "Deleted task '\\x'");
 
-        ExecutionScope.RecordStep("Step1", "Desc1", true);
-        ExecutionScope.RecordStep("Step2", "Desc2", false, error: "err");
-
-        var results = scope.GetStepResults();
-
-        Assert.Equal(2, results.Count);
-        Assert.True(results[0].Success);
-        Assert.False(results[1].Success);
-        Assert.Equal("err", results[1].Error);
+        var change = Assert.Single(changes.Changes);
+        Assert.True(change.Ok);
+        Assert.Equal(ChangeKind.Irreversible, change.Kind);
+        Assert.Null(change.Revert);
     }
-}
 
-public class MockOptimization : IOptimization
-{
-    public Guid Id { get; } = Guid.NewGuid();
-    public OptimizationRisk Risk => OptimizationRisk.Safe;
-    public string OptimizationKey => "MockOptimization";
-    public string Name => "Mock Optimization";
-    public string ShortDescription => "Mock description";
-    public OptimizationState State { get; set; } = new();
-
-    public Task<ApplyResult> ApplyAsync(
-        IProgress<ProcessingProgress> progress,
-        OptimizationContext context
-    )
+    [Fact]
+    public void DidApplyAnything_IgnoresSkipsAndIrreversibleSteps()
     {
-        return Task.FromResult(ApplyResult.True());
+        var changes = new ChangeSet();
+        changes.AddSkip("Service", "skipped");
+        changes.AddIrreversible("Scheduled Task", "deleted");
+
+        Assert.False(changes.DidApplyAnything);
+
+        changes.Add("Registry", "wrote a value", true, new MockRevertStep());
+
+        Assert.True(changes.DidApplyAnything);
+    }
+
+    [Fact]
+    public void DidApplyAnything_FailedChangeDoesNotCount()
+    {
+        var changes = new ChangeSet();
+
+        changes.Add("Registry", "write failed", false, null, "denied");
+
+        Assert.False(changes.DidApplyAnything);
     }
 }
 
@@ -194,7 +276,7 @@ public class MockRevertStep : IRevertStep
     public string Type => "Mock";
     public string Description => "Mock Description";
 
-    public Task<bool> ExecuteAsync()
+    public Task<bool> ExecuteAsync(RevertContext _, ILogger logger)
     {
         return Task.FromResult(true);
     }
@@ -207,5 +289,41 @@ public class MockRevertStep : IRevertStep
     public static MockRevertStep FromData(JObject data)
     {
         return new MockRevertStep();
+    }
+
+    [Fact]
+    public void AddNotApplicable_RecordsStepWithoutCompensation()
+    {
+        var changes = new ChangeSet();
+
+        changes.AddNotApplicable("Service", "Service 'x' not found (not present)");
+
+        var change = Assert.Single(changes.Changes);
+        Assert.True(change.Ok);
+        Assert.Equal(ChangeKind.NotApplicable, change.Kind);
+        Assert.Null(change.Revert);
+    }
+
+    [Fact]
+    public void AddRefused_RecordsStepWithoutCompensation()
+    {
+        var changes = new ChangeSet();
+
+        changes.AddRefused("Service", "Access to service 'x' is denied by Windows");
+
+        var change = Assert.Single(changes.Changes);
+        Assert.True(change.Ok);
+        Assert.Equal(ChangeKind.Refused, change.Kind);
+        Assert.Null(change.Revert);
+    }
+
+    [Fact]
+    public void DidApplyAnything_IgnoresNotApplicableAndRefusedSteps()
+    {
+        var changes = new ChangeSet();
+        changes.AddNotApplicable("Service", "not present");
+        changes.AddRefused("Service", "protected");
+
+        Assert.False(changes.DidApplyAnything);
     }
 }

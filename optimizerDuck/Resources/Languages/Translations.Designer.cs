@@ -97,7 +97,7 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Looking for removable apps….
+        ///   Looks up a localized string similar to Looking for removable apps....
         /// </summary>
         internal static string Bloatware_Loading {
             get {
@@ -151,6 +151,24 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Windows did not remove these packages: {0}.
+        /// </summary>
+        internal static string Bloatware_Remove_Failed_Message {
+            get {
+                return ResourceManager.GetString("Bloatware.Remove.Failed.Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some packages were not removed.
+        /// </summary>
+        internal static string Bloatware_Remove_Failed_Title {
+            get {
+                return ResourceManager.GetString("Bloatware.Remove.Failed.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No results found. Try a different search term or filter..
         /// </summary>
         internal static string Bloatware_Search_NoResults {
@@ -165,15 +183,6 @@ namespace optimizerDuck.Resources.Languages {
         internal static string BloatwareDialog_Confirmation_Description {
             get {
                 return ResourceManager.GetString("BloatwareDialog.Confirmation.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to You are about to remove: {0}.
-        /// </summary>
-        internal static string BloatwareDialog_Confirmation_Message {
-            get {
-                return ResourceManager.GetString("BloatwareDialog.Confirmation.Message", resourceCulture);
             }
         }
         
@@ -210,6 +219,33 @@ namespace optimizerDuck.Resources.Languages {
         internal static string BloatwareDialog_Title {
             get {
                 return ResourceManager.GetString("BloatwareDialog.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following package(s) have unusual identifiers or unverified name formats. Removing packages with unusual names might cause errors or remove unintended files. Please review carefully before proceeding..
+        /// </summary>
+        internal static string BloatwareDialog_UnusualWarning_Description {
+            get {
+                return ResourceManager.GetString("BloatwareDialog.UnusualWarning.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unusual package(s) detected.
+        /// </summary>
+        internal static string BloatwareDialog_UnusualWarning_SelectedList {
+            get {
+                return ResourceManager.GetString("BloatwareDialog.UnusualWarning.SelectedList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Warning: Unusual Package Name.
+        /// </summary>
+        internal static string BloatwareDialog_UnusualWarning_Title {
+            get {
+                return ResourceManager.GetString("BloatwareDialog.UnusualWarning.Title", resourceCulture);
             }
         }
         
@@ -259,15 +295,6 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open.
-        /// </summary>
-        internal static string Button_Open {
-            get {
-                return ResourceManager.GetString("Button.Open", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Retry.
         /// </summary>
         internal static string Button_Retry {
@@ -282,15 +309,6 @@ namespace optimizerDuck.Resources.Languages {
         internal static string Button_Skip {
             get {
                 return ResourceManager.GetString("Button.Skip", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to View latest release.
-        /// </summary>
-        internal static string Button_ViewLatestRelease {
-            get {
-                return ResourceManager.GetString("Button.ViewLatestRelease", resourceCulture);
             }
         }
         
@@ -376,6 +394,15 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Empty.
+        /// </summary>
+        internal static string Common_Empty {
+            get {
+                return ResourceManager.GetString("Common.Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Filter.
         /// </summary>
         internal static string Common_Filter {
@@ -394,11 +421,65 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open Folder.
+        /// </summary>
+        internal static string Common_OpenFolder {
+            get {
+                return ResourceManager.GetString("Common.OpenFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Operation canceled..
+        /// </summary>
+        internal static string Common_OperationCancelled {
+            get {
+                return ResourceManager.GetString("Common.OperationCancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Other.
         /// </summary>
         internal static string Common_Other {
             get {
                 return ResourceManager.GetString("Common.Other", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Depends.
+        /// </summary>
+        internal static string Common_Recommendation_Depends {
+            get {
+                return ResourceManager.GetString("Common.Recommendation.Depends", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Experimental.
+        /// </summary>
+        internal static string Common_Recommendation_Experimental {
+            get {
+                return ResourceManager.GetString("Common.Recommendation.Experimental", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not Recommended.
+        /// </summary>
+        internal static string Common_Recommendation_Off {
+            get {
+                return ResourceManager.GetString("Common.Recommendation.Off", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recommended.
+        /// </summary>
+        internal static string Common_Recommendation_On {
+            get {
+                return ResourceManager.GetString("Common.Recommendation.On", resourceCulture);
             }
         }
         
@@ -417,15 +498,6 @@ namespace optimizerDuck.Resources.Languages {
         internal static string Common_SortBy {
             get {
                 return ResourceManager.GetString("Common.SortBy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Default.
-        /// </summary>
-        internal static string Common_SortBy_Default {
-            get {
-                return ResourceManager.GetString("Common.SortBy.Default", resourceCulture);
             }
         }
         
@@ -466,6 +538,15 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Risk &amp; Status.
+        /// </summary>
+        internal static string Common_SortBy_RiskAndStatus {
+            get {
+                return ResourceManager.GetString("Common.SortBy.RiskAndStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Size.
         /// </summary>
         internal static string Common_SortBy_Size {
@@ -493,15 +574,6 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Applied.
-        /// </summary>
-        internal static string Common_Status_Applied {
-            get {
-                return ResourceManager.GetString("Common.Status.Applied", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Off.
         /// </summary>
         internal static string Common_Toggle_Off {
@@ -525,6 +597,1563 @@ namespace optimizerDuck.Resources.Languages {
         internal static string Common_Unknown {
             get {
                 return ResourceManager.GetString("Common.Unknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item only works on systems with an AMD processor..
+        /// </summary>
+        internal static string Condition_Cpu_Amd_Description {
+            get {
+                return ResourceManager.GetString("Condition.Cpu.Amd.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AMD CPU required.
+        /// </summary>
+        internal static string Condition_Cpu_Amd_Title {
+            get {
+                return ResourceManager.GetString("Condition.Cpu.Amd.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item only works on systems with an Intel processor..
+        /// </summary>
+        internal static string Condition_Cpu_Intel_Description {
+            get {
+                return ResourceManager.GetString("Condition.Cpu.Intel.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Intel CPU required.
+        /// </summary>
+        internal static string Condition_Cpu_Intel_Title {
+            get {
+                return ResourceManager.GetString("Condition.Cpu.Intel.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to optimizerDuck could not determine whether this item is supported on your system..
+        /// </summary>
+        internal static string Condition_Error_Description {
+            get {
+                return ResourceManager.GetString("Condition.Error.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Compatibility check failed.
+        /// </summary>
+        internal static string Condition_Error_Title {
+            get {
+                return ResourceManager.GetString("Condition.Error.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item only works on systems with an AMD graphics card..
+        /// </summary>
+        internal static string Condition_Gpu_Amd_Description {
+            get {
+                return ResourceManager.GetString("Condition.Gpu.Amd.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AMD GPU required.
+        /// </summary>
+        internal static string Condition_Gpu_Amd_Title {
+            get {
+                return ResourceManager.GetString("Condition.Gpu.Amd.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item only works on systems with an Intel graphics card..
+        /// </summary>
+        internal static string Condition_Gpu_Intel_Description {
+            get {
+                return ResourceManager.GetString("Condition.Gpu.Intel.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Intel GPU required.
+        /// </summary>
+        internal static string Condition_Gpu_Intel_Title {
+            get {
+                return ResourceManager.GetString("Condition.Gpu.Intel.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item only works on systems with an NVIDIA graphics card..
+        /// </summary>
+        internal static string Condition_Gpu_Nvidia_Description {
+            get {
+                return ResourceManager.GetString("Condition.Gpu.Nvidia.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NVIDIA GPU required.
+        /// </summary>
+        internal static string Condition_Gpu_Nvidia_Title {
+            get {
+                return ResourceManager.GetString("Condition.Gpu.Nvidia.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item requires at least 16 GB of installed RAM..
+        /// </summary>
+        internal static string Condition_Ram_16_Description {
+            get {
+                return ResourceManager.GetString("Condition.Ram.16.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 16 GB RAM required.
+        /// </summary>
+        internal static string Condition_Ram_16_Title {
+            get {
+                return ResourceManager.GetString("Condition.Ram.16.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows Recall requires Windows 11 24H2 or later with the Windows AI components installed..
+        /// </summary>
+        internal static string Condition_Recall_Description {
+            get {
+                return ResourceManager.GetString("Condition.Recall.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows Recall not available.
+        /// </summary>
+        internal static string Condition_Recall_Title {
+            get {
+                return ResourceManager.GetString("Condition.Recall.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item requires Windows 10..
+        /// </summary>
+        internal static string Condition_Windows10_Description {
+            get {
+                return ResourceManager.GetString("Condition.Windows10.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows 10 required.
+        /// </summary>
+        internal static string Condition_Windows10_Title {
+            get {
+                return ResourceManager.GetString("Condition.Windows10.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item requires Windows 11 24H2 (build 26100) or later..
+        /// </summary>
+        internal static string Condition_Windows11_24H2_Description {
+            get {
+                return ResourceManager.GetString("Condition.Windows11_24H2.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows 11 24H2 or newer required.
+        /// </summary>
+        internal static string Condition_Windows11_24H2_Title {
+            get {
+                return ResourceManager.GetString("Condition.Windows11_24H2.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This item requires Windows 11..
+        /// </summary>
+        internal static string Condition_Windows11_Description {
+            get {
+                return ResourceManager.GetString("Condition.Windows11.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows 11 required.
+        /// </summary>
+        internal static string Condition_Windows11_Title {
+            get {
+                return ResourceManager.GetString("Condition.Windows11.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom.
+        /// </summary>
+        internal static string Customize_CustomOption {
+            get {
+                return ResourceManager.GetString("Customize.CustomOption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not set.
+        /// </summary>
+        internal static string Customize_CustomOption_NotSet {
+            get {
+                return ResourceManager.GetString("Customize.CustomOption.NotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Personalize Windows settings and everyday behavior..
+        /// </summary>
+        internal static string Customize_Description {
+            get {
+                return ResourceManager.GetString("Customize.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Desktop icons and shortcut appearance..
+        /// </summary>
+        internal static string Customize_Desktop_Description {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Desktop.
+        /// </summary>
+        internal static string Customize_Desktop_Name {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shortcut Behaviors.
+        /// </summary>
+        internal static string Customize_Desktop_Section_Behaviors {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.Section.Behaviors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Desktop Icons.
+        /// </summary>
+        internal static string Customize_Desktop_Section_Icons {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.Section.Icons", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides the arrow overlay on desktop shortcuts..
+        /// </summary>
+        internal static string Customize_Desktop_ShortcutArrow_Description {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShortcutArrow.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shortcut Arrow.
+        /// </summary>
+        internal static string Customize_Desktop_ShortcutArrow_Name {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShortcutArrow.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides the Control Panel icon on the desktop..
+        /// </summary>
+        internal static string Customize_Desktop_ShowControlPanel_Description {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShowControlPanel.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Control Panel.
+        /// </summary>
+        internal static string Customize_Desktop_ShowControlPanel_Name {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShowControlPanel.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides all desktop icons at once..
+        /// </summary>
+        internal static string Customize_Desktop_ShowDesktopIcons_Description {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShowDesktopIcons.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Desktop Icons.
+        /// </summary>
+        internal static string Customize_Desktop_ShowDesktopIcons_Name {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShowDesktopIcons.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides the Network icon on the desktop..
+        /// </summary>
+        internal static string Customize_Desktop_ShowNetwork_Description {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShowNetwork.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Network.
+        /// </summary>
+        internal static string Customize_Desktop_ShowNetwork_Name {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShowNetwork.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides the Recycle Bin icon on the desktop..
+        /// </summary>
+        internal static string Customize_Desktop_ShowRecycleBin_Description {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShowRecycleBin.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recycle Bin.
+        /// </summary>
+        internal static string Customize_Desktop_ShowRecycleBin_Name {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShowRecycleBin.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides the This PC icon on the desktop..
+        /// </summary>
+        internal static string Customize_Desktop_ShowThisPc_Description {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShowThisPc.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This PC.
+        /// </summary>
+        internal static string Customize_Desktop_ShowThisPc_Name {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShowThisPc.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides your user folder on the desktop..
+        /// </summary>
+        internal static string Customize_Desktop_ShowUserFiles_Description {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShowUserFiles.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User Files.
+        /// </summary>
+        internal static string Customize_Desktop_ShowUserFiles_Name {
+            get {
+                return ResourceManager.GetString("Customize.Desktop.ShowUserFiles.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Records gameplay and app activity in the background through Game DVR..
+        /// </summary>
+        internal static string Customize_Gaming_BackgroundRecording_Description {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.BackgroundRecording.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Background Recording (DVR).
+        /// </summary>
+        internal static string Customize_Gaming_BackgroundRecording_Name {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.BackgroundRecording.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Background Recording feature captures gameplay in the background, which can use CPU resources and create disk writes..
+        /// </summary>
+        internal static string Customize_Gaming_BackgroundRecording_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.BackgroundRecording.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gaming options for graphics, input, and capture..
+        /// </summary>
+        internal static string Customize_Gaming_Description {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Controls the on-screen DLSS indicator overlay used to verify which DLSS version a game actually renders with..
+        /// </summary>
+        internal static string Customize_Gaming_DlssIndicator_Description {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.DlssIndicator.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DLSS overlay indicator.
+        /// </summary>
+        internal static string Customize_Gaming_DlssIndicator_Name {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.DlssIndicator.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All DLSS versions.
+        /// </summary>
+        internal static string Customize_Gaming_DlssIndicator_Options_AllVersions {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.DlssIndicator.Options.AllVersions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Debug DLLs only.
+        /// </summary>
+        internal static string Customize_Gaming_DlssIndicator_Options_DebugOnly {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.DlssIndicator.Options.DebugOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Off.
+        /// </summary>
+        internal static string Customize_Gaming_DlssIndicator_Options_Off {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.DlssIndicator.Options.Off", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A diagnostic overlay; leave off unless you are checking DLSS behavior..
+        /// </summary>
+        internal static string Customize_Gaming_DlssIndicator_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.DlssIndicator.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Applies Windows&apos; fullscreen optimizations, which can improve compatibility for some games..
+        /// </summary>
+        internal static string Customize_Gaming_FullscreenOptimizations_Description {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.FullscreenOptimizations.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fullscreen Optimizations.
+        /// </summary>
+        internal static string Customize_Gaming_FullscreenOptimizations_Name {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.FullscreenOptimizations.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable it if you experience in-game stuttering, input lag, or black screens (especially in competitive shooters)..
+        /// </summary>
+        internal static string Customize_Gaming_FullscreenOptimizations_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.FullscreenOptimizations.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows the Xbox Game Bar and its related overlays and background features..
+        /// </summary>
+        internal static string Customize_Gaming_GameBar_Description {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.GameBar.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Xbox Game Bar.
+        /// </summary>
+        internal static string Customize_Gaming_GameBar_Name {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.GameBar.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Xbox Game Bar feature provides overlays and background gaming tools that may use system resources..
+        /// </summary>
+        internal static string Customize_Gaming_GameBar_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.GameBar.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gives games priority for system resources and changes how Windows Update behaves while you play..
+        /// </summary>
+        internal static string Customize_Gaming_GameMode_Description {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.GameMode.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Game Mode.
+        /// </summary>
+        internal static string Customize_Gaming_GameMode_Name {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.GameMode.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Game Mode automatically prioritizes game processes and suspends Windows Update notifications while gaming for smoother performance..
+        /// </summary>
+        internal static string Customize_Gaming_GameMode_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.GameMode.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lets the GPU handle more video-memory scheduling work. A compatible graphics driver is required..
+        /// </summary>
+        internal static string Customize_Gaming_HardwareAcceleratedGpuScheduling_Description {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.HardwareAcceleratedGpuScheduling.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hardware-Accelerated GPU Scheduling.
+        /// </summary>
+        internal static string Customize_Gaming_HardwareAcceleratedGpuScheduling_Name {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.HardwareAcceleratedGpuScheduling.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to GPU scheduling offloads frame management from the CPU to the GPU, cutting display latency and improving frame pacing..
+        /// </summary>
+        internal static string Customize_Gaming_HardwareAcceleratedGpuScheduling_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.HardwareAcceleratedGpuScheduling.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Adjusts how cursor movement responds to the speed of your mouse..
+        /// </summary>
+        internal static string Customize_Gaming_MouseAcceleration_Description {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.MouseAcceleration.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mouse Acceleration.
+        /// </summary>
+        internal static string Customize_Gaming_MouseAcceleration_Name {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.MouseAcceleration.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Mouse Acceleration feature changes cursor movement based on speed; raw linear input can improve aim consistency..
+        /// </summary>
+        internal static string Customize_Gaming_MouseAcceleration_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.MouseAcceleration.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gaming.
+        /// </summary>
+        internal static string Customize_Gaming_Name {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display.
+        /// </summary>
+        internal static string Customize_Gaming_Section_Display {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.Section.Display", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Game Settings.
+        /// </summary>
+        internal static string Customize_Gaming_Section_GameSettings {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.Section.GameSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Input.
+        /// </summary>
+        internal static string Customize_Gaming_Section_Input {
+            get {
+                return ResourceManager.GetString("Customize.Gaming.Section.Input", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading settings....
+        /// </summary>
+        internal static string Customize_Loading {
+            get {
+                return ResourceManager.GetString("Customize.Loading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Includes Bing web results alongside local results in Windows Search and the Start menu..
+        /// </summary>
+        internal static string Customize_Preferences_BingSearch_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.BingSearch.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bing Search.
+        /// </summary>
+        internal static string Customize_Preferences_BingSearch_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.BingSearch.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turning off Bing search prevents web queries from cluttering local search results and improves search speed..
+        /// </summary>
+        internal static string Customize_Preferences_BingSearch_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.BingSearch.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uses the classic Windows 10-style context menu instead of the condensed Windows 11 menu..
+        /// </summary>
+        internal static string Customize_Preferences_ClassicContextMenu_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ClassicContextMenu.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Classic Context Menu.
+        /// </summary>
+        internal static string Customize_Preferences_ClassicContextMenu_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ClassicContextMenu.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The classic menu shows all options at once without the extra click needed to expand Windows 11&apos;s condensed menu..
+        /// </summary>
+        internal static string Customize_Preferences_ClassicContextMenu_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ClassicContextMenu.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keeps a history of copied items that you can browse with Win+V..
+        /// </summary>
+        internal static string Customize_Preferences_ClipboardHistory_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ClipboardHistory.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clipboard History.
+        /// </summary>
+        internal static string Customize_Preferences_ClipboardHistory_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ClipboardHistory.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clipboard history lets you recall multiple past copies with Win+V, speeding up repetitive copy-paste workflows..
+        /// </summary>
+        internal static string Customize_Preferences_ClipboardHistory_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ClipboardHistory.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose when to combine taskbar buttons and hide labels across all displays..
+        /// </summary>
+        internal static string Customize_Preferences_CombineTaskbarButtons_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.CombineTaskbarButtons.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Combine Taskbar Buttons.
+        /// </summary>
+        internal static string Customize_Preferences_CombineTaskbarButtons_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.CombineTaskbarButtons.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Always.
+        /// </summary>
+        internal static string Customize_Preferences_CombineTaskbarButtons_Options_Always {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.CombineTaskbarButtons.Options.Always", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Never.
+        /// </summary>
+        internal static string Customize_Preferences_CombineTaskbarButtons_Options_Never {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.CombineTaskbarButtons.Options.Never", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to When taskbar is full.
+        /// </summary>
+        internal static string Customize_Preferences_CombineTaskbarButtons_Options_WhenFull {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.CombineTaskbarButtons.Options.WhenFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Applies dark colors to Windows apps, Settings, and other shell elements..
+        /// </summary>
+        internal static string Customize_Preferences_DarkMode_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.DarkMode.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dark Mode.
+        /// </summary>
+        internal static string Customize_Preferences_DarkMode_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.DarkMode.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fine-tune the way Windows looks and feels..
+        /// </summary>
+        internal static string Customize_Preferences_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tightens the spacing between items in File Explorer for a more compact view..
+        /// </summary>
+        internal static string Customize_Preferences_ExplorerCompactMode_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ExplorerCompactMode.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Explorer Compact Mode.
+        /// </summary>
+        internal static string Customize_Preferences_ExplorerCompactMode_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ExplorerCompactMode.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows check boxes next to items in File Explorer, making it easier to select several files at once..
+        /// </summary>
+        internal static string Customize_Preferences_ExplorerItemCheckboxes_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ExplorerItemCheckboxes.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Explorer Item Check Boxes.
+        /// </summary>
+        internal static string Customize_Preferences_ExplorerItemCheckboxes_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ExplorerItemCheckboxes.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides notifications from OneDrive and other cloud sync providers in File Explorer..
+        /// </summary>
+        internal static string Customize_Preferences_ExplorerSyncNotifications_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ExplorerSyncNotifications.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Explorer Sync Notifications.
+        /// </summary>
+        internal static string Customize_Preferences_ExplorerSyncNotifications_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ExplorerSyncNotifications.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Explorer Sync Notifications feature controls OneDrive and cloud-sync pop-ups while browsing files..
+        /// </summary>
+        internal static string Customize_Preferences_ExplorerSyncNotifications_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ExplorerSyncNotifications.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose whether File Explorer opens to This PC or Quick access..
+        /// </summary>
+        internal static string Customize_Preferences_LaunchToThisPc_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.LaunchToThisPc.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File Explorer Startup Location.
+        /// </summary>
+        internal static string Customize_Preferences_LaunchToThisPc_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.LaunchToThisPc.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Quick Access.
+        /// </summary>
+        internal static string Customize_Preferences_LaunchToThisPc_Options_QuickAccess {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.LaunchToThisPc.Options.QuickAccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This PC.
+        /// </summary>
+        internal static string Customize_Preferences_LaunchToThisPc_Options_ThisPc {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.LaunchToThisPc.Options.ThisPc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Preferences.
+        /// </summary>
+        internal static string Customize_Preferences_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose whether the taskbar shows a search box, a search icon, or no search control..
+        /// </summary>
+        internal static string Customize_Preferences_SearchBoxTaskbarMode_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.SearchBoxTaskbarMode.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search Box Display.
+        /// </summary>
+        internal static string Customize_Preferences_SearchBoxTaskbarMode_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.SearchBoxTaskbarMode.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hidden.
+        /// </summary>
+        internal static string Customize_Preferences_SearchBoxTaskbarMode_Options_Hidden {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.SearchBoxTaskbarMode.Options.Hidden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Icon Only.
+        /// </summary>
+        internal static string Customize_Preferences_SearchBoxTaskbarMode_Options_Icon {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.SearchBoxTaskbarMode.Options.Icon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Icon + Label.
+        /// </summary>
+        internal static string Customize_Preferences_SearchBoxTaskbarMode_Options_IconAndLabel {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.SearchBoxTaskbarMode.Options.IconAndLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search Box.
+        /// </summary>
+        internal static string Customize_Preferences_SearchBoxTaskbarMode_Options_SearchBox {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.SearchBoxTaskbarMode.Options.SearchBox", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Appearance.
+        /// </summary>
+        internal static string Customize_Preferences_Section_Appearance {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.Section.Appearance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Explorer.
+        /// </summary>
+        internal static string Customize_Preferences_Section_Explorer {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.Section.Explorer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Taskbar.
+        /// </summary>
+        internal static string Customize_Preferences_Section_Taskbar {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.Section.Taskbar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides file extensions such as .txt and .exe in File Explorer..
+        /// </summary>
+        internal static string Customize_Preferences_ShowFileExtensions_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ShowFileExtensions.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File Extensions.
+        /// </summary>
+        internal static string Customize_Preferences_ShowFileExtensions_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ShowFileExtensions.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File extensions make suspicious file types easier to spot and prevent malware from hiding behind misleading icons..
+        /// </summary>
+        internal static string Customize_Preferences_ShowFileExtensions_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ShowFileExtensions.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides hidden files and folders in File Explorer..
+        /// </summary>
+        internal static string Customize_Preferences_ShowHiddenFiles_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ShowHiddenFiles.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hidden Files.
+        /// </summary>
+        internal static string Customize_Preferences_ShowHiddenFiles_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ShowHiddenFiles.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hidden files contain system and configuration data that may be needed for administration and troubleshooting..
+        /// </summary>
+        internal static string Customize_Preferences_ShowHiddenFiles_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ShowHiddenFiles.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows seconds in the taskbar clock..
+        /// </summary>
+        internal static string Customize_Preferences_ShowSecondsInSystemClock_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ShowSecondsInSystemClock.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Seconds in System Clock.
+        /// </summary>
+        internal static string Customize_Preferences_ShowSecondsInSystemClock_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ShowSecondsInSystemClock.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides the Snap Layouts menu when you hover over a window&apos;s maximize button..
+        /// </summary>
+        internal static string Customize_Preferences_SnapAssistFlyout_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.SnapAssistFlyout.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Snap Layouts Flyout.
+        /// </summary>
+        internal static string Customize_Preferences_SnapAssistFlyout_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.SnapAssistFlyout.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides Windows tips and app suggestions in Settings..
+        /// </summary>
+        internal static string Customize_Preferences_SystemSuggestions_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.SystemSuggestions.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System Suggestions.
+        /// </summary>
+        internal static string Customize_Preferences_SystemSuggestions_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.SystemSuggestions.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The System Suggestions feature controls Windows recommendations for apps and settings..
+        /// </summary>
+        internal static string Customize_Preferences_SystemSuggestions_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.SystemSuggestions.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose whether taskbar icons sit in the center or align to the left..
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarAlignment_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarAlignment.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Taskbar Alignment.
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarAlignment_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarAlignment.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Center.
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarAlignment_Options_Center {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarAlignment.Options.Center", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Left.
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarAlignment_Options_Left {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarAlignment.Options.Left", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Adds an End task command to the taskbar context menu, so you can close an unresponsive app without opening Task Manager..
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarEndTask_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarEndTask.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Taskbar End Task.
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarEndTask_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarEndTask.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to End Task on the taskbar lets you kill frozen apps instantly without opening Task Manager..
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarEndTask_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarEndTask.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Makes a taskbar click open the most recently used window for that app..
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarLastActiveClick_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarLastActiveClick.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Active Click.
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarLastActiveClick_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarLastActiveClick.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides the Task View button on the taskbar..
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarTaskViewButton_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarTaskViewButton.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Taskbar Task View Button.
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarTaskViewButton_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarTaskViewButton.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows or hides the Widgets button on the taskbar. Widgets provide quick access to news, weather, and other updates..
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarWidgets_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarWidgets.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Taskbar Widgets.
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarWidgets_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarWidgets.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Widgets feature can fetch news and weather in the background, which may increase idle network and memory usage..
+        /// </summary>
+        internal static string Customize_Preferences_TaskbarWidgets_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.TaskbarWidgets.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Controls toast notifications, including alerts that appear on the desktop or lock screen..
+        /// </summary>
+        internal static string Customize_Preferences_ToastNotifications_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ToastNotifications.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Toast Notifications.
+        /// </summary>
+        internal static string Customize_Preferences_ToastNotifications_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.ToastNotifications.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shake the active window to minimize the others, or turn this behavior off..
+        /// </summary>
+        internal static string Customize_Preferences_WindowShake_Description {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.WindowShake.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Window Shake.
+        /// </summary>
+        internal static string Customize_Preferences_WindowShake_Name {
+            get {
+                return ResourceManager.GetString("Customize.Preferences.WindowShake.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lets trusted Windows apps install without requiring Developer Mode..
+        /// </summary>
+        internal static string Customize_SystemFeatures_AllowAllTrustedApps_Description {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.AllowAllTrustedApps.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Trusted Apps.
+        /// </summary>
+        internal static string Customize_SystemFeatures_AllowAllTrustedApps_Name {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.AllowAllTrustedApps.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allowing all trusted apps enables sideloading without Developer Mode; disabling restricts installations to the Microsoft Store..
+        /// </summary>
+        internal static string Customize_SystemFeatures_AllowAllTrustedApps_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.AllowAllTrustedApps.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Useful Windows features and system behavior..
+        /// </summary>
+        internal static string Customize_SystemFeatures_Description {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provides tools for app sideloading, Device Portal, SSH, and other development tasks..
+        /// </summary>
+        internal static string Customize_SystemFeatures_DeveloperMode_Description {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.DeveloperMode.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Developer Mode.
+        /// </summary>
+        internal static string Customize_SystemFeatures_DeveloperMode_Name {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.DeveloperMode.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Developer Mode enables sideloading and diagnostic features essential for app development and debugging..
+        /// </summary>
+        internal static string Customize_SystemFeatures_DeveloperMode_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.DeveloperMode.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disables Smart Multi-Homed Name Resolution so DNS queries stop racing out of every network adapter at once. Prevents queries from bypassing the tunnel when a VPN is in use..
+        /// </summary>
+        internal static string Customize_SystemFeatures_DisableSmartNameResolution_Description {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.DisableSmartNameResolution.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DNS leak protection.
+        /// </summary>
+        internal static string Customize_SystemFeatures_DisableSmartNameResolution_Name {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.DisableSmartNameResolution.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allows compatible apps to work with file paths longer than the traditional 260-character limit..
+        /// </summary>
+        internal static string Customize_SystemFeatures_LongPathsEnabled_Description {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.LongPathsEnabled.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Long Path Support (&gt;260 chars).
+        /// </summary>
+        internal static string Customize_SystemFeatures_LongPathsEnabled_Name {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.LongPathsEnabled.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Long path support prevents file-access errors when working with deeply nested directories or projects with long names..
+        /// </summary>
+        internal static string Customize_SystemFeatures_LongPathsEnabled_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.LongPathsEnabled.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System.
+        /// </summary>
+        internal static string Customize_SystemFeatures_Name {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sets whether Num Lock is on when Windows reaches the sign-in screen..
+        /// </summary>
+        internal static string Customize_SystemFeatures_NumLockOnBoot_Description {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.NumLockOnBoot.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NumLock on Boot.
+        /// </summary>
+        internal static string Customize_SystemFeatures_NumLockOnBoot_Name {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.NumLockOnBoot.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enabling NumLock at boot ensures the numpad is ready immediately after login, avoiding manual toggling each time..
+        /// </summary>
+        internal static string Customize_SystemFeatures_NumLockOnBoot_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.NumLockOnBoot.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Boot Settings.
+        /// </summary>
+        internal static string Customize_SystemFeatures_Section_Boot {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.Section.Boot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Developer.
+        /// </summary>
+        internal static string Customize_SystemFeatures_Section_Developer {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.Section.Developer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Input Settings.
+        /// </summary>
+        internal static string Customize_SystemFeatures_Section_Input {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.Section.Input", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Network Settings.
+        /// </summary>
+        internal static string Customize_SystemFeatures_Section_Network {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.Section.Network", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power Settings.
+        /// </summary>
+        internal static string Customize_SystemFeatures_Section_Power {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.Section.Power", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows the current battery percentage next to the battery icon in the system tray..
+        /// </summary>
+        internal static string Customize_SystemFeatures_ShowBatteryPercentage_Description {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.ShowBatteryPercentage.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Battery Percentage.
+        /// </summary>
+        internal static string Customize_SystemFeatures_ShowBatteryPercentage_Name {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.ShowBatteryPercentage.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Interpret the hardware clock as UTC. Required on Windows/Linux dual-boot so both systems agree on the clock; on single-boot machines the time jumps by your timezone offset until this is turned back off..
+        /// </summary>
+        internal static string Customize_SystemFeatures_UtcHardwareClock_Description {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.UtcHardwareClock.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hardware clock uses UTC.
+        /// </summary>
+        internal static string Customize_SystemFeatures_UtcHardwareClock_Name {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.UtcHardwareClock.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable only when another OS on this machine also treats the hardware clock as UTC..
+        /// </summary>
+        internal static string Customize_SystemFeatures_UtcHardwareClock_Recommendation_Reason {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.UtcHardwareClock.Recommendation.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show the exact service, driver, or step being processed during startup, shutdown, and updates instead of a generic spinner..
+        /// </summary>
+        internal static string Customize_SystemFeatures_VerboseStatus_Description {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.VerboseStatus.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verbose status messages.
+        /// </summary>
+        internal static string Customize_SystemFeatures_VerboseStatus_Name {
+            get {
+                return ResourceManager.GetString("Customize.SystemFeatures.VerboseStatus.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Customize.
+        /// </summary>
+        internal static string Customize_Title {
+            get {
+                return ResourceManager.GetString("Customize.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some settings are unavailable on your current system..
+        /// </summary>
+        internal static string Customize_UI_UnsupportedSettings_Description {
+            get {
+                return ResourceManager.GetString("Customize.UI.UnsupportedSettings.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsupported Settings ({0}).
+        /// </summary>
+        internal static string Customize_UI_UnsupportedSettings_Header {
+            get {
+                return ResourceManager.GetString("Customize.UI.UnsupportedSettings.Header", resourceCulture);
             }
         }
         
@@ -619,11 +2248,47 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} MHz.
+        /// </summary>
+        internal static string Dashboard_SystemInfo_Cpu_Frequency {
+            get {
+                return ResourceManager.GetString("Dashboard.SystemInfo.Cpu.Frequency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} Threads.
         /// </summary>
         internal static string Dashboard_SystemInfo_Cpu_Threads {
             get {
                 return ResourceManager.GetString("Dashboard.SystemInfo.Cpu.Threads", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Firmware: {0}.
+        /// </summary>
+        internal static string Dashboard_SystemInfo_Firmware {
+            get {
+                return ResourceManager.GetString("Dashboard.SystemInfo.Firmware", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Driver {0}.
+        /// </summary>
+        internal static string Dashboard_SystemInfo_Gpu_Driver {
+            get {
+                return ResourceManager.GetString("Dashboard.SystemInfo.Gpu.Driver", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} GB.
+        /// </summary>
+        internal static string Dashboard_SystemInfo_Gpu_Memory {
+            get {
+                return ResourceManager.GetString("Dashboard.SystemInfo.Gpu.Memory", resourceCulture);
             }
         }
         
@@ -637,20 +2302,29 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to System Information.
-        /// </summary>
-        internal static string Dashboard_SystemInfo_Header {
-            get {
-                return ResourceManager.GetString("Dashboard.SystemInfo.Header", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Fetching System Information....
         /// </summary>
         internal static string Dashboard_SystemInfo_Loading {
             get {
                 return ResourceManager.GetString("Dashboard.SystemInfo.Loading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} MT/s.
+        /// </summary>
+        internal static string Dashboard_SystemInfo_Memory_Speed {
+            get {
+                return ResourceManager.GetString("Dashboard.SystemInfo.Memory.Speed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Memory integrity: {0}.
+        /// </summary>
+        internal static string Dashboard_SystemInfo_MemoryIntegrity {
+            get {
+                return ResourceManager.GetString("Dashboard.SystemInfo.MemoryIntegrity", resourceCulture);
             }
         }
         
@@ -682,6 +2356,24 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Platform &amp; security.
+        /// </summary>
+        internal static string Dashboard_SystemInfo_Platform_Header {
+            get {
+                return ResourceManager.GetString("Dashboard.SystemInfo.Platform.Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power: {0}.
+        /// </summary>
+        internal static string Dashboard_SystemInfo_PowerPlan {
+            get {
+                return ResourceManager.GetString("Dashboard.SystemInfo.PowerPlan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} GB Available.
         /// </summary>
         internal static string Dashboard_SystemInfo_Ram_Available {
@@ -700,11 +2392,29 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} GB RAM.
+        /// </summary>
+        internal static string Dashboard_SystemInfo_Ram_Total {
+            get {
+                return ResourceManager.GetString("Dashboard.SystemInfo.Ram.Total", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} GB Used.
         /// </summary>
         internal static string Dashboard_SystemInfo_Ram_Used {
             get {
                 return ResourceManager.GetString("Dashboard.SystemInfo.Ram.Used", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Secure Boot: {0}.
+        /// </summary>
+        internal static string Dashboard_SystemInfo_SecureBoot {
+            get {
+                return ResourceManager.GetString("Dashboard.SystemInfo.SecureBoot", resourceCulture);
             }
         }
         
@@ -736,8 +2446,25 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to optimizerDuck (v{0}) is available!
-        ///Update now to enjoy the latest features, improvements, and bug fixes..
+        ///   Looks up a localized string similar to Uptime.
+        /// </summary>
+        internal static string Dashboard_SystemInfo_Uptime_Label {
+            get {
+                return ResourceManager.GetString("Dashboard.SystemInfo.Uptime.Label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to VBS: {0}.
+        /// </summary>
+        internal static string Dashboard_SystemInfo_Vbs {
+            get {
+                return ResourceManager.GetString("Dashboard.SystemInfo.Vbs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to optimizerDuck (v{0}) is available! Update now to enjoy the latest features, improvements, and bug fixes..
         /// </summary>
         internal static string Dashboard_UpdateInfoBar_Message {
             get {
@@ -800,6 +2527,15 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Clean.
+        /// </summary>
+        internal static string DiskCleanup_Button_Clean {
+            get {
+                return ResourceManager.GetString("DiskCleanup.Button.Clean", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Clean Selected ({0}).
         /// </summary>
         internal static string DiskCleanup_Button_CleanSelected {
@@ -850,6 +2586,33 @@ namespace optimizerDuck.Resources.Languages {
         internal static string DiskCleanup_Complete_Title {
             get {
                 return ResourceManager.GetString("DiskCleanup.Complete.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are about to delete {0} from {1} item(s) ({2} file(s)). Please review the items below..
+        /// </summary>
+        internal static string DiskCleanup_Dialog_Confirmation_Summary {
+            get {
+                return ResourceManager.GetString("DiskCleanup.Dialog.Confirmation.Summary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clean {0} Selected Items.
+        /// </summary>
+        internal static string DiskCleanup_Dialog_Confirmation_Title {
+            get {
+                return ResourceManager.GetString("DiskCleanup.Dialog.Confirmation.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Files will be permanently deleted. This action cannot be undone..
+        /// </summary>
+        internal static string DiskCleanup_Dialog_Confirmation_Warning {
+            get {
+                return ResourceManager.GetString("DiskCleanup.Dialog.Confirmation.Warning", resourceCulture);
             }
         }
         
@@ -1061,29 +2824,11 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} ({1} items selected).
-        /// </summary>
-        internal static string DiskCleanup_ItemsSelected {
-            get {
-                return ResourceManager.GetString("DiskCleanup.ItemsSelected", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Loading cleanup items....
         /// </summary>
         internal static string DiskCleanup_Loading {
             get {
                 return ResourceManager.GetString("DiskCleanup.Loading", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Scanning....
-        /// </summary>
-        internal static string DiskCleanup_Scanning {
-            get {
-                return ResourceManager.GetString("DiskCleanup.Scanning", resourceCulture);
             }
         }
         
@@ -1097,911 +2842,398 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable or disable Windows features.
+        ///   Looks up a localized string similar to ARM64.
         /// </summary>
-        internal static string Features_Description {
+        internal static string Enum_Architecture_Arm64 {
             get {
-                return ResourceManager.GetString("Features.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.Architecture.Arm64", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Manage desktop icons and shortcut behaviors.
+        ///   Looks up a localized string similar to 64-bit.
         /// </summary>
-        internal static string Features_Desktop_Description {
+        internal static string Enum_Architecture_X64 {
             get {
-                return ResourceManager.GetString("Features.Desktop.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.Architecture.X64", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Desktop.
+        ///   Looks up a localized string similar to 32-bit.
         /// </summary>
-        internal static string Features_Desktop_Name {
+        internal static string Enum_Architecture_X86 {
             get {
-                return ResourceManager.GetString("Features.Desktop.Name", resourceCulture);
+                return ResourceManager.GetString("Enum.Architecture.X86", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hide the small arrow overlay on desktop shortcut icons.
+        ///   Looks up a localized string similar to AMD.
         /// </summary>
-        internal static string Features_Desktop_RemoveShortcutArrow_Description {
+        internal static string Enum_CpuVendor_Amd {
             get {
-                return ResourceManager.GetString("Features.Desktop.RemoveShortcutArrow.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.CpuVendor.Amd", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Remove Shortcut Arrow.
+        ///   Looks up a localized string similar to Intel.
         /// </summary>
-        internal static string Features_Desktop_RemoveShortcutArrow_Name {
+        internal static string Enum_CpuVendor_Intel {
             get {
-                return ResourceManager.GetString("Features.Desktop.RemoveShortcutArrow.Name", resourceCulture);
+                return ResourceManager.GetString("Enum.CpuVendor.Intel", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Shortcut Behaviors.
+        ///   Looks up a localized string similar to Legacy BIOS.
         /// </summary>
-        internal static string Features_Desktop_Section_Behaviors {
+        internal static string Enum_FirmwareMode_Legacy {
             get {
-                return ResourceManager.GetString("Features.Desktop.Section.Behaviors", resourceCulture);
+                return ResourceManager.GetString("Enum.FirmwareMode.Legacy", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Desktop Icons.
+        ///   Looks up a localized string similar to UEFI.
         /// </summary>
-        internal static string Features_Desktop_Section_Icons {
+        internal static string Enum_FirmwareMode_Uefi {
             get {
-                return ResourceManager.GetString("Features.Desktop.Section.Icons", resourceCulture);
+                return ResourceManager.GetString("Enum.FirmwareMode.Uefi", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Display the Control Panel icon on your desktop.
+        ///   Looks up a localized string similar to AMD.
         /// </summary>
-        internal static string Features_Desktop_ShowControlPanel_Description {
+        internal static string Enum_GpuVendor_Amd {
             get {
-                return ResourceManager.GetString("Features.Desktop.ShowControlPanel.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.GpuVendor.Amd", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show Control Panel.
+        ///   Looks up a localized string similar to Intel.
         /// </summary>
-        internal static string Features_Desktop_ShowControlPanel_Name {
+        internal static string Enum_GpuVendor_Intel {
             get {
-                return ResourceManager.GetString("Features.Desktop.ShowControlPanel.Name", resourceCulture);
+                return ResourceManager.GetString("Enum.GpuVendor.Intel", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show or hide all desktop icons at once.
+        ///   Looks up a localized string similar to NVIDIA.
         /// </summary>
-        internal static string Features_Desktop_ShowDesktopIcons_Description {
+        internal static string Enum_GpuVendor_Nvidia {
             get {
-                return ResourceManager.GetString("Features.Desktop.ShowDesktopIcons.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.GpuVendor.Nvidia", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show Desktop Icons.
+        ///   Looks up a localized string similar to DDR.
         /// </summary>
-        internal static string Features_Desktop_ShowDesktopIcons_Name {
+        internal static string Enum_MemoryType_Ddr {
             get {
-                return ResourceManager.GetString("Features.Desktop.ShowDesktopIcons.Name", resourceCulture);
+                return ResourceManager.GetString("Enum.MemoryType.Ddr", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Display the Network icon on your desktop.
+        ///   Looks up a localized string similar to DDR2.
         /// </summary>
-        internal static string Features_Desktop_ShowNetwork_Description {
+        internal static string Enum_MemoryType_Ddr2 {
             get {
-                return ResourceManager.GetString("Features.Desktop.ShowNetwork.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.MemoryType.Ddr2", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show Network.
+        ///   Looks up a localized string similar to DDR3.
         /// </summary>
-        internal static string Features_Desktop_ShowNetwork_Name {
+        internal static string Enum_MemoryType_Ddr3 {
             get {
-                return ResourceManager.GetString("Features.Desktop.ShowNetwork.Name", resourceCulture);
+                return ResourceManager.GetString("Enum.MemoryType.Ddr3", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Display the Recycle Bin icon on your desktop.
+        ///   Looks up a localized string similar to DDR4.
         /// </summary>
-        internal static string Features_Desktop_ShowRecycleBin_Description {
+        internal static string Enum_MemoryType_Ddr4 {
             get {
-                return ResourceManager.GetString("Features.Desktop.ShowRecycleBin.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.MemoryType.Ddr4", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show Recycle Bin.
+        ///   Looks up a localized string similar to DDR5.
         /// </summary>
-        internal static string Features_Desktop_ShowRecycleBin_Name {
+        internal static string Enum_MemoryType_Ddr5 {
             get {
-                return ResourceManager.GetString("Features.Desktop.ShowRecycleBin.Name", resourceCulture);
+                return ResourceManager.GetString("Enum.MemoryType.Ddr5", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Display the This PC icon on your desktop.
+        ///   Looks up a localized string similar to HBM.
         /// </summary>
-        internal static string Features_Desktop_ShowThisPc_Description {
+        internal static string Enum_MemoryType_Hbm {
             get {
-                return ResourceManager.GetString("Features.Desktop.ShowThisPc.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.MemoryType.Hbm", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show &quot;This PC&quot;.
+        ///   Looks up a localized string similar to LPDDR.
         /// </summary>
-        internal static string Features_Desktop_ShowThisPc_Name {
+        internal static string Enum_MemoryType_Lpddr {
             get {
-                return ResourceManager.GetString("Features.Desktop.ShowThisPc.Name", resourceCulture);
+                return ResourceManager.GetString("Enum.MemoryType.Lpddr", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Display your user profile folder as a desktop icon.
+        ///   Looks up a localized string similar to Other.
         /// </summary>
-        internal static string Features_Desktop_ShowUserFiles_Description {
+        internal static string Enum_MemoryType_Other {
             get {
-                return ResourceManager.GetString("Features.Desktop.ShowUserFiles.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.MemoryType.Other", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show User Files.
+        ///   Looks up a localized string similar to SDRAM.
         /// </summary>
-        internal static string Features_Desktop_ShowUserFiles_Name {
+        internal static string Enum_MemoryType_Sdram {
             get {
-                return ResourceManager.GetString("Features.Desktop.ShowUserFiles.Name", resourceCulture);
+                return ResourceManager.GetString("Enum.MemoryType.Sdram", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Controls automatic background game recording (Game DVR) and app capture..
+        ///   Looks up a localized string similar to Disabled.
         /// </summary>
-        internal static string Features_Gaming_BackgroundRecording_Description {
+        internal static string Enum_SecureBootState_Disabled {
             get {
-                return ResourceManager.GetString("Features.Gaming.BackgroundRecording.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.SecureBootState.Disabled", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Background Recording (DVR).
+        ///   Looks up a localized string similar to Enabled.
         /// </summary>
-        internal static string Features_Gaming_BackgroundRecording_Name {
+        internal static string Enum_SecureBootState_Enabled {
             get {
-                return ResourceManager.GetString("Features.Gaming.BackgroundRecording.Name", resourceCulture);
+                return ResourceManager.GetString("Enum.SecureBootState.Enabled", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Game-related display, input, and recording settings.
+        ///   Looks up a localized string similar to Unavailable.
         /// </summary>
-        internal static string Features_Gaming_Description {
+        internal static string Enum_SecureBootState_Unavailable {
             get {
-                return ResourceManager.GetString("Features.Gaming.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.SecureBootState.Unavailable", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Controls Windows DWM-based full-screen optimizations that may cause input lag or forced borderless windowed mode..
+        ///   Looks up a localized string similar to HDD.
         /// </summary>
-        internal static string Features_Gaming_FullscreenOptimizations_Description {
+        internal static string Enum_StorageMediaType_Hdd {
             get {
-                return ResourceManager.GetString("Features.Gaming.FullscreenOptimizations.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.StorageMediaType.Hdd", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fullscreen Optimizations.
+        ///   Looks up a localized string similar to NVMe.
         /// </summary>
-        internal static string Features_Gaming_FullscreenOptimizations_Name {
+        internal static string Enum_StorageMediaType_Nvme {
             get {
-                return ResourceManager.GetString("Features.Gaming.FullscreenOptimizations.Name", resourceCulture);
+                return ResourceManager.GetString("Enum.StorageMediaType.Nvme", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Controls Xbox Game Bar overlays, startup panel, and related background features..
+        ///   Looks up a localized string similar to SSD.
         /// </summary>
-        internal static string Features_Gaming_GameBar_Description {
+        internal static string Enum_StorageMediaType_Ssd {
             get {
-                return ResourceManager.GetString("Features.Gaming.GameBar.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.StorageMediaType.Ssd", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Xbox Game Bar.
+        ///   Looks up a localized string similar to Disabled.
         /// </summary>
-        internal static string Features_Gaming_GameBar_Name {
+        internal static string Enum_VbsState_Disabled {
             get {
-                return ResourceManager.GetString("Features.Gaming.GameBar.Name", resourceCulture);
+                return ResourceManager.GetString("Enum.VbsState.Disabled", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Prioritizes game processes and prevents interruptions from Windows Update while gaming..
+        ///   Looks up a localized string similar to Enabled.
         /// </summary>
-        internal static string Features_Gaming_GameMode_Description {
+        internal static string Enum_VbsState_Enabled {
             get {
-                return ResourceManager.GetString("Features.Gaming.GameMode.Description", resourceCulture);
+                return ResourceManager.GetString("Enum.VbsState.Enabled", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Game Mode.
+        ///   Looks up a localized string similar to Unavailable.
         /// </summary>
-        internal static string Features_Gaming_GameMode_Name {
+        internal static string Enum_VbsState_Unavailable {
             get {
-                return ResourceManager.GetString("Features.Gaming.GameMode.Name", resourceCulture);
+                return ResourceManager.GetString("Enum.VbsState.Unavailable", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Lets the GPU manage its own video memory scheduling directly, reducing CPU overhead and display latency. Requires a compatible GPU driver..
+        ///   Looks up a localized string similar to Details are in the log file..
         /// </summary>
-        internal static string Features_Gaming_HardwareAcceleratedGpuScheduling_Description {
+        internal static string Error_Unhandled_LogHint {
             get {
-                return ResourceManager.GetString("Features.Gaming.HardwareAcceleratedGpuScheduling.Description", resourceCulture);
+                return ResourceManager.GetString("Error.Unhandled.LogHint", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hardware-Accelerated GPU Scheduling.
+        ///   Looks up a localized string similar to The last action could not be completed: {0}.
         /// </summary>
-        internal static string Features_Gaming_HardwareAcceleratedGpuScheduling_Name {
+        internal static string Error_Unhandled_Message {
             get {
-                return ResourceManager.GetString("Features.Gaming.HardwareAcceleratedGpuScheduling.Name", resourceCulture);
+                return ResourceManager.GetString("Error.Unhandled.Message", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Controls Windows&apos; automatic mouse speed adjustment. Disabling provides precise, 1:1 cursor movement..
+        ///   Looks up a localized string similar to Something went wrong.
         /// </summary>
-        internal static string Features_Gaming_MouseAcceleration_Description {
+        internal static string Error_Unhandled_Title {
             get {
-                return ResourceManager.GetString("Features.Gaming.MouseAcceleration.Description", resourceCulture);
+                return ResourceManager.GetString("Error.Unhandled.Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mouse Acceleration.
+        ///   Looks up a localized string similar to Third-party notices.
         /// </summary>
-        internal static string Features_Gaming_MouseAcceleration_Name {
+        internal static string LegalDialog_Extras_Acknowledgements_Description {
             get {
-                return ResourceManager.GetString("Features.Gaming.MouseAcceleration.Name", resourceCulture);
+                return ResourceManager.GetString("LegalDialog.Extras.Acknowledgements.Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Gaming.
+        ///   Looks up a localized string similar to Acknowledgements.
         /// </summary>
-        internal static string Features_Gaming_Name {
+        internal static string LegalDialog_Extras_Acknowledgements_Title {
             get {
-                return ResourceManager.GetString("Features.Gaming.Name", resourceCulture);
+                return ResourceManager.GetString("LegalDialog.Extras.Acknowledgements.Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Display.
+        ///   Looks up a localized string similar to Community &amp; support.
         /// </summary>
-        internal static string Features_Gaming_Section_Display {
+        internal static string LegalDialog_Extras_Discord_Description {
             get {
-                return ResourceManager.GetString("Features.Gaming.Section.Display", resourceCulture);
+                return ResourceManager.GetString("LegalDialog.Extras.Discord.Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Game Settings.
+        ///   Looks up a localized string similar to Discord.
         /// </summary>
-        internal static string Features_Gaming_Section_GameSettings {
+        internal static string LegalDialog_Extras_Discord_Title {
             get {
-                return ResourceManager.GetString("Features.Gaming.Section.GameSettings", resourceCulture);
+                return ResourceManager.GetString("LegalDialog.Extras.Discord.Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Input.
+        ///   Looks up a localized string similar to Guides &amp; getting started.
         /// </summary>
-        internal static string Features_Gaming_Section_Input {
+        internal static string LegalDialog_Extras_Docs_Description {
             get {
-                return ResourceManager.GetString("Features.Gaming.Section.Input", resourceCulture);
+                return ResourceManager.GetString("LegalDialog.Extras.Docs.Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Controls Bing web search results appearing in the Start menu search..
+        ///   Looks up a localized string similar to Documentation.
         /// </summary>
-        internal static string Features_Preferences_BingSearchInStartMenu_Description {
+        internal static string LegalDialog_Extras_Docs_Title {
             get {
-                return ResourceManager.GetString("Features.Preferences.BingSearchInStartMenu.Description", resourceCulture);
+                return ResourceManager.GetString("LegalDialog.Extras.Docs.Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Bing Search in Start Menu.
+        ///   Looks up a localized string similar to Source code &amp; issues.
         /// </summary>
-        internal static string Features_Preferences_BingSearchInStartMenu_Name {
+        internal static string LegalDialog_Extras_GitHub_Description {
             get {
-                return ResourceManager.GetString("Features.Preferences.BingSearchInStartMenu.Name", resourceCulture);
+                return ResourceManager.GetString("LegalDialog.Extras.GitHub.Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restores Windows 10-style full context menu on Windows 11..
+        ///   Looks up a localized string similar to GitHub.
         /// </summary>
-        internal static string Features_Preferences_ClassicContextMenu_Description {
+        internal static string LegalDialog_Extras_GitHub_Title {
             get {
-                return ResourceManager.GetString("Features.Preferences.ClassicContextMenu.Description", resourceCulture);
+                return ResourceManager.GetString("LegalDialog.Extras.GitHub.Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Classic Context Menu.
+        ///   Looks up a localized string similar to Explore.
         /// </summary>
-        internal static string Features_Preferences_ClassicContextMenu_Name {
+        internal static string LegalDialog_Extras_Header {
             get {
-                return ResourceManager.GetString("Features.Preferences.ClassicContextMenu.Name", resourceCulture);
+                return ResourceManager.GetString("LegalDialog.Extras.Header", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Keep multiple copied items so you can paste them later with Win+V..
+        ///   Looks up a localized string similar to Choose your language and theme, take a moment to review our Terms, Privacy Policy, and Disclaimer, then you&apos;re ready to go..
         /// </summary>
-        internal static string Features_Preferences_ClipboardHistory_Description {
+        internal static string LegalDialog_Intro_Description {
             get {
-                return ResourceManager.GetString("Features.Preferences.ClipboardHistory.Description", resourceCulture);
+                return ResourceManager.GetString("LegalDialog.Intro.Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clipboard History.
+        ///   Looks up a localized string similar to Welcome to optimizerDuck!.
         /// </summary>
-        internal static string Features_Preferences_ClipboardHistory_Name {
+        internal static string LegalDialog_Intro_Title {
             get {
-                return ResourceManager.GetString("Features.Preferences.ClipboardHistory.Name", resourceCulture);
+                return ResourceManager.GetString("LegalDialog.Intro.Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enables dark mode for system apps, Settings, and shell elements..
+        ///   Looks up a localized string similar to Choose your preferred language.
         /// </summary>
-        internal static string Features_Preferences_DarkMode_Description {
+        internal static string LegalDialog_Language_Description {
             get {
-                return ResourceManager.GetString("Features.Preferences.DarkMode.Description", resourceCulture);
+                return ResourceManager.GetString("LegalDialog.Language.Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Dark Mode.
+        ///   Looks up a localized string similar to Language.
         /// </summary>
-        internal static string Features_Preferences_DarkMode_Name {
+        internal static string LegalDialog_Language_Title {
             get {
-                return ResourceManager.GetString("Features.Preferences.DarkMode.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Customize visual and interaction settings.
-        /// </summary>
-        internal static string Features_Preferences_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Remove Bing web results and suggestions from Windows Search.
-        /// </summary>
-        internal static string Features_Preferences_DisableBingSearch_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.DisableBingSearch.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Disable Bing Search.
-        /// </summary>
-        internal static string Features_Preferences_DisableBingSearch_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.DisableBingSearch.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Decreases spacing between items in File Explorer for a denser view..
-        /// </summary>
-        internal static string Features_Preferences_ExplorerCompactMode_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ExplorerCompactMode.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Explorer Compact Mode.
-        /// </summary>
-        internal static string Features_Preferences_ExplorerCompactMode_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ExplorerCompactMode.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Shows check boxes when selecting items in File Explorer..
-        /// </summary>
-        internal static string Features_Preferences_ExplorerItemCheckboxes_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ExplorerItemCheckboxes.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Explorer Item Check Boxes.
-        /// </summary>
-        internal static string Features_Preferences_ExplorerItemCheckboxes_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ExplorerItemCheckboxes.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Controls OneDrive and cloud sync provider notifications in File Explorer..
-        /// </summary>
-        internal static string Features_Preferences_ExplorerSyncNotifications_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ExplorerSyncNotifications.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Explorer Sync Notifications.
-        /// </summary>
-        internal static string Features_Preferences_ExplorerSyncNotifications_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ExplorerSyncNotifications.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Open File Explorer to This PC instead of Quick Access.
-        /// </summary>
-        internal static string Features_Preferences_LaunchToThisPc_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.LaunchToThisPc.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Launch to &quot;This PC&quot;.
-        /// </summary>
-        internal static string Features_Preferences_LaunchToThisPc_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.LaunchToThisPc.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Controls the Meet Now (Skype) icon in the taskbar notification area..
-        /// </summary>
-        internal static string Features_Preferences_MeetNow_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.MeetNow.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Meet Now.
-        /// </summary>
-        internal static string Features_Preferences_MeetNow_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.MeetNow.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Preferences.
-        /// </summary>
-        internal static string Features_Preferences_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Appearance.
-        /// </summary>
-        internal static string Features_Preferences_Section_Appearance {
-            get {
-                return ResourceManager.GetString("Features.Preferences.Section.Appearance", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Explorer.
-        /// </summary>
-        internal static string Features_Preferences_Section_Explorer {
-            get {
-                return ResourceManager.GetString("Features.Preferences.Section.Explorer", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Taskbar.
-        /// </summary>
-        internal static string Features_Preferences_Section_Taskbar {
-            get {
-                return ResourceManager.GetString("Features.Preferences.Section.Taskbar", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Shows file extensions (e.g. .txt, .exe) in File Explorer..
-        /// </summary>
-        internal static string Features_Preferences_ShowFileExtensions_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ShowFileExtensions.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Show File Extensions.
-        /// </summary>
-        internal static string Features_Preferences_ShowFileExtensions_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ShowFileExtensions.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Shows hidden files and folders in File Explorer..
-        /// </summary>
-        internal static string Features_Preferences_ShowHiddenFiles_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ShowHiddenFiles.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Show Hidden Files.
-        /// </summary>
-        internal static string Features_Preferences_ShowHiddenFiles_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ShowHiddenFiles.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Displays seconds in the taskbar clock for precise time monitoring..
-        /// </summary>
-        internal static string Features_Preferences_ShowSecondsInSystemClock_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ShowSecondsInSystemClock.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Seconds in System Clock.
-        /// </summary>
-        internal static string Features_Preferences_ShowSecondsInSystemClock_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ShowSecondsInSystemClock.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Controls the snap layouts menu that appears when hovering over the maximize button..
-        /// </summary>
-        internal static string Features_Preferences_SnapAssistFlyout_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.SnapAssistFlyout.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Snap Layouts Flyout.
-        /// </summary>
-        internal static string Features_Preferences_SnapAssistFlyout_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.SnapAssistFlyout.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Controls Windows tips and app suggestions in the Settings panel..
-        /// </summary>
-        internal static string Features_Preferences_SystemSuggestions_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.SystemSuggestions.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to System Suggestions.
-        /// </summary>
-        internal static string Features_Preferences_SystemSuggestions_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.SystemSuggestions.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Switches taskbar alignment between Center (default) and Left..
-        /// </summary>
-        internal static string Features_Preferences_TaskbarAlignment_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarAlignment.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Taskbar Alignment.
-        /// </summary>
-        internal static string Features_Preferences_TaskbarAlignment_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarAlignment.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Controls visibility of the Chat (Teams) button on the taskbar..
-        /// </summary>
-        internal static string Features_Preferences_TaskbarChatButton_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarChatButton.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Taskbar Chat Button.
-        /// </summary>
-        internal static string Features_Preferences_TaskbarChatButton_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarChatButton.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Adds an &quot;End task&quot; option to the taskbar right-click menu for quick process termination..
-        /// </summary>
-        internal static string Features_Preferences_TaskbarEndTask_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarEndTask.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Taskbar End Task.
-        /// </summary>
-        internal static string Features_Preferences_TaskbarEndTask_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarEndTask.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Controls the News and Interests widget on the taskbar and MSN feed background updates..
-        /// </summary>
-        internal static string Features_Preferences_TaskbarNewsAndInterests_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarNewsAndInterests.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Taskbar News &amp; Interests.
-        /// </summary>
-        internal static string Features_Preferences_TaskbarNewsAndInterests_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarNewsAndInterests.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Controls the People icon on the taskbar for quick contacts access..
-        /// </summary>
-        internal static string Features_Preferences_TaskbarPeople_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarPeople.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Taskbar People.
-        /// </summary>
-        internal static string Features_Preferences_TaskbarPeople_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarPeople.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Controls visibility of the search box on the taskbar..
-        /// </summary>
-        internal static string Features_Preferences_TaskbarSearchBox_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarSearchBox.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Taskbar Search Box.
-        /// </summary>
-        internal static string Features_Preferences_TaskbarSearchBox_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarSearchBox.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Controls visibility of the Task View button on the taskbar..
-        /// </summary>
-        internal static string Features_Preferences_TaskbarTaskViewButton_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarTaskViewButton.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Taskbar Task View Button.
-        /// </summary>
-        internal static string Features_Preferences_TaskbarTaskViewButton_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarTaskViewButton.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Controls visibility of the Widgets button on the taskbar..
-        /// </summary>
-        internal static string Features_Preferences_TaskbarWidgets_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarWidgets.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Taskbar Widgets.
-        /// </summary>
-        internal static string Features_Preferences_TaskbarWidgets_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.TaskbarWidgets.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Controls toast popup notifications and lock screen notifications..
-        /// </summary>
-        internal static string Features_Preferences_ToastNotifications_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ToastNotifications.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Toast Notifications.
-        /// </summary>
-        internal static string Features_Preferences_ToastNotifications_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.ToastNotifications.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Shake a window to minimize all other open windows..
-        /// </summary>
-        internal static string Features_Preferences_WindowShake_Description {
-            get {
-                return ResourceManager.GetString("Features.Preferences.WindowShake.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Window Shake.
-        /// </summary>
-        internal static string Features_Preferences_WindowShake_Name {
-            get {
-                return ResourceManager.GetString("Features.Preferences.WindowShake.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Optimize core system features and behaviors.
-        /// </summary>
-        internal static string Features_SystemFeatures_Description {
-            get {
-                return ResourceManager.GetString("Features.SystemFeatures.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Automatically turns on NumLock at the Windows login screen.
-        /// </summary>
-        internal static string Features_SystemFeatures_EnableNumLockOnBoot_Description {
-            get {
-                return ResourceManager.GetString("Features.SystemFeatures.EnableNumLockOnBoot.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Enable NumLock on Boot.
-        /// </summary>
-        internal static string Features_SystemFeatures_EnableNumLockOnBoot_Name {
-            get {
-                return ResourceManager.GetString("Features.SystemFeatures.EnableNumLockOnBoot.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to System.
-        /// </summary>
-        internal static string Features_SystemFeatures_Name {
-            get {
-                return ResourceManager.GetString("Features.SystemFeatures.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Boot Operations.
-        /// </summary>
-        internal static string Features_SystemFeatures_Section_Boot {
-            get {
-                return ResourceManager.GetString("Features.SystemFeatures.Section.Boot", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Input Settings.
-        /// </summary>
-        internal static string Features_SystemFeatures_Section_Input {
-            get {
-                return ResourceManager.GetString("Features.SystemFeatures.Section.Input", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Features.
-        /// </summary>
-        internal static string Features_Title {
-            get {
-                return ResourceManager.GetString("Features.Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Please take a moment to review the following documents. By continuing, you agree to these terms..
-        /// </summary>
-        internal static string LegalDialog_Intro_Review {
-            get {
-                return ResourceManager.GetString("LegalDialog.Intro.Review", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to To ensure transparency and your safety, optimizerDuck may adjust certain system settings and registry configurations..
-        /// </summary>
-        internal static string LegalDialog_Intro_Safety {
-            get {
-                return ResourceManager.GetString("LegalDialog.Intro.Safety", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Thank you for choosing optimizerDuck..
-        /// </summary>
-        internal static string LegalDialog_Intro_ThankYou {
-            get {
-                return ResourceManager.GetString("LegalDialog.Intro.ThankYou", resourceCulture);
+                return ResourceManager.GetString("LegalDialog.Language.Title", resourceCulture);
             }
         }
         
@@ -2029,6 +3261,33 @@ namespace optimizerDuck.Resources.Languages {
         internal static string LegalDialog_Link_TermsOfService {
             get {
                 return ResourceManager.GetString("LegalDialog.Link.TermsOfService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Preferences.
+        /// </summary>
+        internal static string LegalDialog_Preferences_Header {
+            get {
+                return ResourceManager.GetString("LegalDialog.Preferences.Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose your preferred theme.
+        /// </summary>
+        internal static string LegalDialog_Theme_Description {
+            get {
+                return ResourceManager.GetString("LegalDialog.Theme.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Theme.
+        /// </summary>
+        internal static string LegalDialog_Theme_Title {
+            get {
+                return ResourceManager.GetString("LegalDialog.Theme.Title", resourceCulture);
             }
         }
         
@@ -2069,6 +3328,15 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All steps failed..
+        /// </summary>
+        internal static string Optimization_Apply_Error_AllStepsFailed {
+            get {
+                return ResourceManager.GetString("Optimization.Apply.Error.AllStepsFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to apply {0}..
         /// </summary>
         internal static string Optimization_Apply_Error_Failed {
@@ -2087,6 +3355,24 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unknown result for {0}..
+        /// </summary>
+        internal static string Optimization_Apply_Error_Unknown {
+            get {
+                return ResourceManager.GetString("Optimization.Apply.Error.Unknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nothing to change: {0} already matches this machine..
+        /// </summary>
+        internal static string Optimization_Apply_NothingToDo {
+            get {
+                return ResourceManager.GetString("Optimization.Apply.NothingToDo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Applying changes....
         /// </summary>
         internal static string Optimization_Apply_Processing {
@@ -2101,6 +3387,15 @@ namespace optimizerDuck.Resources.Languages {
         internal static string Optimization_Apply_Snackbar_Error_Title {
             get {
                 return ResourceManager.GetString("Optimization.Apply.Snackbar.Error.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nothing to change.
+        /// </summary>
+        internal static string Optimization_Apply_Snackbar_NothingToDo_Title {
+            get {
+                return ResourceManager.GetString("Optimization.Apply.Snackbar.NothingToDo.Title", resourceCulture);
             }
         }
         
@@ -2195,15 +3490,6 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Revert step #{0}.
-        /// </summary>
-        internal static string Optimization_Revert_StepDescription {
-            get {
-                return ResourceManager.GetString("Optimization.Revert.StepDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Successfully reverted {0}!.
         /// </summary>
         internal static string Optimization_Revert_Success {
@@ -2267,6 +3553,24 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Reveals the file where optimizerDuck wrote what this optimization did. It stays after a revert, so the history is still there..
+        /// </summary>
+        internal static string OptimizationDetailsDialog_Other_OpenRecordFile_Description {
+            get {
+                return ResourceManager.GetString("OptimizationDetailsDialog.Other.OpenRecordFile.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show the record file.
+        /// </summary>
+        internal static string OptimizationDetailsDialog_Other_OpenRecordFile_Title {
+            get {
+                return ResourceManager.GetString("OptimizationDetailsDialog.Other.OpenRecordFile.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open the raw json file containing revert data for this optimization..
         /// </summary>
         internal static string OptimizationDetailsDialog_Other_OpenRevertFile_Description {
@@ -2303,24 +3607,6 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Risk Level.
-        /// </summary>
-        internal static string OptimizationDetailsDialog_Risk {
-            get {
-                return ResourceManager.GetString("OptimizationDetailsDialog.Risk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Tags.
-        /// </summary>
-        internal static string OptimizationDetailsDialog_Tags {
-            get {
-                return ResourceManager.GetString("OptimizationDetailsDialog.Tags", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Technical Details.
         /// </summary>
         internal static string OptimizationDetailsDialog_TechnicalDetails {
@@ -2335,6 +3621,15 @@ namespace optimizerDuck.Resources.Languages {
         internal static string OptimizationResultDialog_Description {
             get {
                 return ResourceManager.GetString("OptimizationResultDialog.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Details.
+        /// </summary>
+        internal static string OptimizationResultDialog_Details {
+            get {
+                return ResourceManager.GetString("OptimizationResultDialog.Details", resourceCulture);
             }
         }
         
@@ -2366,6 +3661,51 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to AI.
+        /// </summary>
+        internal static string Optimizer_AI {
+            get {
+                return ResourceManager.GetString("Optimizer.AI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable Click To Do.
+        /// </summary>
+        internal static string Optimizer_AI_DisableClickToDo_Name {
+            get {
+                return ResourceManager.GetString("Optimizer.AI.DisableClickToDo.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turns off the AI-powered Click To Do overlay that analyzes text and images on your screen..
+        /// </summary>
+        internal static string Optimizer_AI_DisableClickToDo_ShortDescription {
+            get {
+                return ResourceManager.GetString("Optimizer.AI.DisableClickToDo.ShortDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable Windows Recall.
+        /// </summary>
+        internal static string Optimizer_AI_DisableRecall_Name {
+            get {
+                return ResourceManager.GetString("Optimizer.AI.DisableRecall.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disables the Windows Recall AI feature that captures and indexes snapshots of your screen. Also removes the Recall component and deletes previously saved snapshots on Windows 11 24H2+ (Build 26100.3915+); a restart is required to take effect..
+        /// </summary>
+        internal static string Optimizer_AI_DisableRecall_ShortDescription {
+            get {
+                return ResourceManager.GetString("Optimizer.AI.DisableRecall.ShortDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Bloatware &amp; Services.
         /// </summary>
         internal static string Optimizer_BloatwareAndServices {
@@ -2388,8 +3728,7 @@ namespace optimizerDuck.Resources.Languages {
         /// </summary>
         internal static string Optimizer_BloatwareAndServices_ConfigureServices_Progress_ChangeServiceStartupType {
             get {
-                return ResourceManager.GetString("Optimizer.BloatwareAndServices.ConfigureServices.Progress.ChangeServiceStartupTyp" +
-                        "e", resourceCulture);
+                return ResourceManager.GetString("Optimizer.BloatwareAndServices.ConfigureServices.Progress.ChangeServiceStartupType", resourceCulture);
             }
         }
         
@@ -2417,6 +3756,726 @@ namespace optimizerDuck.Resources.Languages {
         internal static string Optimizer_BloatwareAndServices_DisablePreinstalledApps_ShortDescription {
             get {
                 return ResourceManager.GetString("Optimizer.BloatwareAndServices.DisablePreinstalledApps.ShortDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not supported on this system.
+        /// </summary>
+        internal static string Optimizer_Condition_BlockedTitle {
+            get {
+                return ResourceManager.GetString("Optimizer.Condition.BlockedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Condition failed.
+        /// </summary>
+        internal static string Optimizer_Condition_FailedTitle {
+            get {
+                return ResourceManager.GetString("Optimizer.Condition.FailedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide.
+        /// </summary>
+        internal static string Optimizer_Condition_Hide {
+            get {
+                return ResourceManager.GetString("Optimizer.Condition.Hide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show this optimization again and allow applying it anyway..
+        /// </summary>
+        internal static string Optimizer_Condition_Hide_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.Condition.Hide.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to What is this?.
+        /// </summary>
+        internal static string Optimizer_Condition_WhatIsThis {
+            get {
+                return ResourceManager.GetString("Optimizer.Condition.WhatIsThis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Compatibility conditions check whether an item is supported on your system, e.g. which Windows version or which GPU is installed. When a condition fails, the item is hidden by default because it may not work. If you know what you are doing, you can hide this warning and apply the item anyway..
+        /// </summary>
+        internal static string Optimizer_Condition_WhatIsThis_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.Condition.WhatIsThis.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to At.
+        /// </summary>
+        internal static string Optimizer_Details_Field_At {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.At", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempt.
+        /// </summary>
+        internal static string Optimizer_Details_Field_Attempt {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.Attempt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Devices.
+        /// </summary>
+        internal static string Optimizer_Details_Field_Devices {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.Devices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error code.
+        /// </summary>
+        internal static string Optimizer_Details_Field_ErrorCode {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.ErrorCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hibernation state.
+        /// </summary>
+        internal static string Optimizer_Details_Field_HibernationState {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.HibernationState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New value.
+        /// </summary>
+        internal static string Optimizer_Details_Field_New {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.New", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Removed.
+        /// </summary>
+        internal static string Optimizer_Details_Field_New_None {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.New.None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path.
+        /// </summary>
+        internal static string Optimizer_Details_Field_Path {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.Path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power plan.
+        /// </summary>
+        internal static string Optimizer_Details_Field_PowerPlan {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.PowerPlan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Previous value.
+        /// </summary>
+        internal static string Optimizer_Details_Field_Previous {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.Previous", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not present.
+        /// </summary>
+        internal static string Optimizer_Details_Field_Previous_None {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.Previous.None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reason.
+        /// </summary>
+        internal static string Optimizer_Details_Field_Reason {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service.
+        /// </summary>
+        internal static string Optimizer_Details_Field_Service {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.Service", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Setting.
+        /// </summary>
+        internal static string Optimizer_Details_Field_Setting {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.Setting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Startup type.
+        /// </summary>
+        internal static string Optimizer_Details_Field_StartupState {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.StartupState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Task.
+        /// </summary>
+        internal static string Optimizer_Details_Field_Task {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.Task", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Task state.
+        /// </summary>
+        internal static string Optimizer_Details_Field_TaskState {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.TaskState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Took.
+        /// </summary>
+        internal static string Optimizer_Details_Field_Took {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.Took", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type.
+        /// </summary>
+        internal static string Optimizer_Details_Field_Type {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.Type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value.
+        /// </summary>
+        internal static string Optimizer_Details_Field_Value {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.Value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value name.
+        /// </summary>
+        internal static string Optimizer_Details_Field_ValueName {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Field.ValueName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turn off hibernation and Fast Startup.
+        /// </summary>
+        internal static string Optimizer_Details_Op_Hibernation {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.Hibernation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turn hibernation and Fast Startup back on.
+        /// </summary>
+        internal static string Optimizer_Details_Op_HibernationEnable {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.HibernationEnable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore hibernation and Fast Startup.
+        /// </summary>
+        internal static string Optimizer_Details_Op_HibernationRestore {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.HibernationRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set power plan {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Op_PowerPlanActivate {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.PowerPlanActivate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Install power plan {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Op_PowerPlanInstall {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.PowerPlanInstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore power plan {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Op_PowerPlanRestore {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.PowerPlanRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove power plan {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Op_PowerPlanUninstall {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.PowerPlanUninstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Change power setting {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Op_PowerSetting {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.PowerSetting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore power setting {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Op_PowerSettingRestore {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.PowerSettingRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create registry key.
+        /// </summary>
+        internal static string Optimizer_Details_Op_RegistryCreateKey {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.RegistryCreateKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete value {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Op_RegistryDelete {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.RegistryDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete registry key.
+        /// </summary>
+        internal static string Optimizer_Details_Op_RegistryDeleteKey {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.RegistryDeleteKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore value {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Op_RegistryRestore {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.RegistryRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore registry key.
+        /// </summary>
+        internal static string Optimizer_Details_Op_RegistryRestoreKey {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.RegistryRestoreKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Write value {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Op_RegistrySet {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.RegistrySet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore service {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Op_ServiceRestore {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.ServiceRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Change service {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Op_ServiceStartup {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.ServiceStartup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable task {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Op_TaskDisable {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.TaskDisable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable task {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Op_TaskEnable {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.TaskEnable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turn off USB power saving.
+        /// </summary>
+        internal static string Optimizer_Details_Op_UsbPower {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.UsbPower", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turn USB power saving back on.
+        /// </summary>
+        internal static string Optimizer_Details_Op_UsbPowerRestore {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Op.UsbPowerRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hibernation.
+        /// </summary>
+        internal static string Optimizer_Details_Provider_Hibernation {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Provider.Hibernation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power plan.
+        /// </summary>
+        internal static string Optimizer_Details_Provider_PowerPlan {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Provider.PowerPlan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registry.
+        /// </summary>
+        internal static string Optimizer_Details_Provider_Registry {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Provider.Registry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scheduled task.
+        /// </summary>
+        internal static string Optimizer_Details_Provider_ScheduledTask {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Provider.ScheduledTask", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service.
+        /// </summary>
+        internal static string Optimizer_Details_Provider_Service {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Provider.Service", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shell.
+        /// </summary>
+        internal static string Optimizer_Details_Provider_Shell {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Provider.Shell", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to USB power saving.
+        /// </summary>
+        internal static string Optimizer_Details_Provider_UsbPower {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Provider.UsbPower", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The key was not there to begin with.
+        /// </summary>
+        internal static string Optimizer_Details_Reason_RegistryKeyAbsent {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Reason.RegistryKeyAbsent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The key was already there.
+        /// </summary>
+        internal static string Optimizer_Details_Reason_RegistryKeyExists {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Reason.RegistryKeyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The value was not there to begin with.
+        /// </summary>
+        internal static string Optimizer_Details_Reason_RegistryValueAbsent {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Reason.RegistryValueAbsent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This service is not on this machine.
+        /// </summary>
+        internal static string Optimizer_Details_Reason_ServiceNotFound {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Reason.ServiceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This task is not on this machine.
+        /// </summary>
+        internal static string Optimizer_Details_Reason_TaskNotFound {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Reason.TaskNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This machine has no USB root hubs.
+        /// </summary>
+        internal static string Optimizer_Details_Reason_UsbNoDevices {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Reason.UsbNoDevices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Applied run at {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Record_Apply {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Record.Apply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No record yet for this item..
+        /// </summary>
+        internal static string Optimizer_Details_Record_Empty {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Record.Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reverted at {0}.
+        /// </summary>
+        internal static string Optimizer_Details_Record_Revert {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Record.Revert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last recorded run.
+        /// </summary>
+        internal static string Optimizer_Details_Record_Title {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Record.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Took.
+        /// </summary>
+        internal static string Optimizer_Details_Record_Took {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Record.Took", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to App version.
+        /// </summary>
+        internal static string Optimizer_Details_Record_Version {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Record.Version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows.
+        /// </summary>
+        internal static string Optimizer_Details_Record_Windows {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Record.Windows", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Already correct.
+        /// </summary>
+        internal static string Optimizer_Details_Step_AlreadyCorrect {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Step.AlreadyCorrect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Changed.
+        /// </summary>
+        internal static string Optimizer_Details_Step_Changed {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Step.Changed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed.
+        /// </summary>
+        internal static string Optimizer_Details_Step_Failed {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Step.Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No way back.
+        /// </summary>
+        internal static string Optimizer_Details_Step_Irreversible {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Step.Irreversible", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not applicable.
+        /// </summary>
+        internal static string Optimizer_Details_Step_NotApplicable {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Step.NotApplicable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refused by Windows.
+        /// </summary>
+        internal static string Optimizer_Details_Step_Refused {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Step.Refused", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to On.
+        /// </summary>
+        internal static string Optimizer_Details_Value_Enabled {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Value.Enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Automatic.
+        /// </summary>
+        internal static string Optimizer_Details_Value_Startup_Automatic {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Value.Startup.Automatic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Automatic (delayed start).
+        /// </summary>
+        internal static string Optimizer_Details_Value_Startup_AutomaticDelayed {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Value.Startup.AutomaticDelayed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Off.
+        /// </summary>
+        internal static string Optimizer_Details_Value_Startup_Disabled {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Value.Startup.Disabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manual.
+        /// </summary>
+        internal static string Optimizer_Details_Value_Startup_Manual {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Value.Startup.Manual", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown.
+        /// </summary>
+        internal static string Optimizer_Details_Value_Unknown {
+            get {
+                return ResourceManager.GetString("Optimizer.Details.Value.Unknown", resourceCulture);
             }
         }
         
@@ -2574,43 +4633,7 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Apply Everything.
-        /// </summary>
-        internal static string Optimizer_Menu_ApplyAll {
-            get {
-                return ResourceManager.GetString("Optimizer.Menu.ApplyAll", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Apply All Safe.
-        /// </summary>
-        internal static string Optimizer_Menu_ApplyAllSafe {
-            get {
-                return ResourceManager.GetString("Optimizer.Menu.ApplyAllSafe", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Apply.
-        /// </summary>
-        internal static string Optimizer_Menu_ApplyMenu {
-            get {
-                return ResourceManager.GetString("Optimizer.Menu.ApplyMenu", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Applying Optimizations.
-        /// </summary>
-        internal static string Optimizer_Menu_BatchApply_Title {
-            get {
-                return ResourceManager.GetString("Optimizer.Menu.BatchApply.Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hide Applied.
+        ///   Looks up a localized string similar to Hide finished items.
         /// </summary>
         internal static string Optimizer_Menu_HideApplied {
             get {
@@ -2633,6 +4656,33 @@ namespace optimizerDuck.Resources.Languages {
         internal static string Optimizer_Performance {
             get {
                 return ResourceManager.GetString("Optimizer.Performance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid RAM: {0}.
+        /// </summary>
+        internal static string Optimizer_Performance_ConsolidateServiceHosts_Error_InvalidRAM {
+            get {
+                return ResourceManager.GetString("Optimizer.Performance.ConsolidateServiceHosts.Error.InvalidRAM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Consolidate Service Hosts.
+        /// </summary>
+        internal static string Optimizer_Performance_ConsolidateServiceHosts_Name {
+            get {
+                return ResourceManager.GetString("Optimizer.Performance.ConsolidateServiceHosts.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Raises the Service Host split threshold to total system RAM, keeping services consolidated in fewer processes to reduce memory overhead and process count..
+        /// </summary>
+        internal static string Optimizer_Performance_ConsolidateServiceHosts_ShortDescription {
+            get {
+                return ResourceManager.GetString("Optimizer.Performance.ConsolidateServiceHosts.ShortDescription", resourceCulture);
             }
         }
         
@@ -2673,24 +4723,6 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Optimize Game Scheduling.
-        /// </summary>
-        internal static string Optimizer_Performance_GameTaskScheduling_Name {
-            get {
-                return ResourceManager.GetString("Optimizer.Performance.GameTaskScheduling.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Assigns high priority to gaming workloads to ensure consistent frames per second (FPS) and smoother gameplay..
-        /// </summary>
-        internal static string Optimizer_Performance_GameTaskScheduling_ShortDescription {
-            get {
-                return ResourceManager.GetString("Optimizer.Performance.GameTaskScheduling.ShortDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Optimize Keyboard Repeat.
         /// </summary>
         internal static string Optimizer_Performance_KeyboardLatencyOptimization_Name {
@@ -2709,20 +4741,38 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multimedia &amp; Network Responsiveness.
+        ///   Looks up a localized string similar to Lift WebDAV 50 MB limit.
         /// </summary>
-        internal static string Optimizer_Performance_MultimediaResponsiveness_Name {
+        internal static string Optimizer_Performance_LiftWebDavFileSizeLimit_Name {
             get {
-                return ResourceManager.GetString("Optimizer.Performance.MultimediaResponsiveness.Name", resourceCulture);
+                return ResourceManager.GetString("Optimizer.Performance.LiftWebDavFileSizeLimit.Name", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Prioritizes system resources for multimedia and gaming by reducing background CPU reservation and disabling network throttling for lower latency..
+        ///   Looks up a localized string similar to Raises the WebClient file size limit for WebDAV mounts from 50 MB to 4 GB so large files stop failing on network locations..
         /// </summary>
-        internal static string Optimizer_Performance_MultimediaResponsiveness_ShortDescription {
+        internal static string Optimizer_Performance_LiftWebDavFileSizeLimit_ShortDescription {
             get {
-                return ResourceManager.GetString("Optimizer.Performance.MultimediaResponsiveness.ShortDescription", resourceCulture);
+                return ResourceManager.GetString("Optimizer.Performance.LiftWebDavFileSizeLimit.ShortDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Optimize Multimedia Scheduler.
+        /// </summary>
+        internal static string Optimizer_Performance_OptimizeMultimediaScheduler_Name {
+            get {
+                return ResourceManager.GetString("Optimizer.Performance.OptimizeMultimediaScheduler.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configures the Multimedia Class Scheduler Service (MMCSS) for gaming and low latency by prioritizing multimedia workloads and disabling network throttling..
+        /// </summary>
+        internal static string Optimizer_Performance_OptimizeMultimediaScheduler_ShortDescription {
+            get {
+                return ResourceManager.GetString("Optimizer.Performance.OptimizeMultimediaScheduler.ShortDescription", resourceCulture);
             }
         }
         
@@ -2745,33 +4795,6 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid RAM: {0}.
-        /// </summary>
-        internal static string Optimizer_Performance_SvcHostSplit_Error_InvalidRAM {
-            get {
-                return ResourceManager.GetString("Optimizer.Performance.SvcHostSplit.Error.InvalidRAM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Optimize Service Isolation.
-        /// </summary>
-        internal static string Optimizer_Performance_SvcHostSplit_Name {
-            get {
-                return ResourceManager.GetString("Optimizer.Performance.SvcHostSplit.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Sets the Service Host split threshold to match total system RAM, forcing Windows to isolate services into separate processes for improved stability..
-        /// </summary>
-        internal static string Optimizer_Performance_SvcHostSplit_ShortDescription {
-            get {
-                return ResourceManager.GetString("Optimizer.Performance.SvcHostSplit.ShortDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Power Management.
         /// </summary>
         internal static string Optimizer_PowerManagement {
@@ -2781,38 +4804,20 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Disable Fast Startup.
+        ///   Looks up a localized string similar to Disable Hibernation &amp; Fast Startup.
         /// </summary>
-        internal static string Optimizer_PowerManagement_DisableFastStartup_Name {
+        internal static string Optimizer_PowerManagement_DisableHibernateAndFastStartup_Name {
             get {
-                return ResourceManager.GetString("Optimizer.PowerManagement.DisableFastStartup.Name", resourceCulture);
+                return ResourceManager.GetString("Optimizer.PowerManagement.DisableHibernateAndFastStartup.Name", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Turns off Fast Startup to ensure a full shutdown and cleaner hardware initialization on boot..
+        ///   Looks up a localized string similar to Turns off hibernation and Fast Startup to reclaim disk space and ensure a full shutdown for cleaner hardware initialization on boot..
         /// </summary>
-        internal static string Optimizer_PowerManagement_DisableFastStartup_ShortDescription {
+        internal static string Optimizer_PowerManagement_DisableHibernateAndFastStartup_ShortDescription {
             get {
-                return ResourceManager.GetString("Optimizer.PowerManagement.DisableFastStartup.ShortDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Disable Hibernation.
-        /// </summary>
-        internal static string Optimizer_PowerManagement_DisableHibernate_Name {
-            get {
-                return ResourceManager.GetString("Optimizer.PowerManagement.DisableHibernate.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Turns off hibernation to reclaim disk space used by the hiberfil.sys file..
-        /// </summary>
-        internal static string Optimizer_PowerManagement_DisableHibernate_ShortDescription {
-            get {
-                return ResourceManager.GetString("Optimizer.PowerManagement.DisableHibernate.ShortDescription", resourceCulture);
+                return ResourceManager.GetString("Optimizer.PowerManagement.DisableHibernateAndFastStartup.ShortDescription", resourceCulture);
             }
         }
         
@@ -2866,17 +4871,7 @@ namespace optimizerDuck.Resources.Languages {
         /// </summary>
         internal static string Optimizer_PowerManagement_InstallOptimizerDuckPowerPlan_Error_DetectActivePlanFailed {
             get {
-                return ResourceManager.GetString("Optimizer.PowerManagement.InstallOptimizerDuckPowerPlan.Error.DetectActivePlanFai" +
-                        "led", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to download optimizerDuck&apos;s power plan..
-        /// </summary>
-        internal static string Optimizer_PowerManagement_InstallOptimizerDuckPowerPlan_Error_DownloadFailed {
-            get {
-                return ResourceManager.GetString("Optimizer.PowerManagement.InstallOptimizerDuckPowerPlan.Error.DownloadFailed", resourceCulture);
+                return ResourceManager.GetString("Optimizer.PowerManagement.InstallOptimizerDuckPowerPlan.Error.DetectActivePlanFailed", resourceCulture);
             }
         }
         
@@ -2899,15 +4894,6 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Downloading power plan....
-        /// </summary>
-        internal static string Optimizer_PowerManagement_InstallOptimizerDuckPowerPlan_Progress_Downloading {
-            get {
-                return ResourceManager.GetString("Optimizer.PowerManagement.InstallOptimizerDuckPowerPlan.Progress.Downloading", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Importing and activating power plan....
         /// </summary>
         internal static string Optimizer_PowerManagement_InstallOptimizerDuckPowerPlan_Progress_Importing {
@@ -2917,29 +4903,11 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installs a custom performance-focused power plan to ensure your system always runs at maximum speed..
+        ///   Looks up a localized string similar to Installs a custom performance-focused power plan to ensure your system always runs at maximum speed. Warning: May cause Task Manager to incorrectly show 100% CPU usage on some systems, actual CPU load is unaffected..
         /// </summary>
         internal static string Optimizer_PowerManagement_InstallOptimizerDuckPowerPlan_ShortDescription {
             get {
                 return ResourceManager.GetString("Optimizer.PowerManagement.InstallOptimizerDuckPowerPlan.ShortDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Optimize Multimedia Profile.
-        /// </summary>
-        internal static string Optimizer_PowerManagement_OptimizeMultimediaProfile_Name {
-            get {
-                return ResourceManager.GetString("Optimizer.PowerManagement.OptimizeMultimediaProfile.Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Configures the multimedia system profile to prioritize performance and disable lazy mode for better responsiveness..
-        /// </summary>
-        internal static string Optimizer_PowerManagement_OptimizeMultimediaProfile_ShortDescription {
-            get {
-                return ResourceManager.GetString("Optimizer.PowerManagement.OptimizeMultimediaProfile.ShortDescription", resourceCulture);
             }
         }
         
@@ -2998,7 +4966,7 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Stops non-essential system event logging to reduce continuous disk activity and save CPU cycles..
+        ///   Looks up a localized string similar to Stops non-essential WMI/ETW AutoLogger sessions (Diagtrack-Listener, SQMLogger, etc.) from starting at boot to reduce background disk and CPU activity. Note: security software may flag AutoLogger changes as they alter diagnostic tracing..
         /// </summary>
         internal static string Optimizer_SecurityAndPrivacy_DisableAutoLogger_ShortDescription {
             get {
@@ -3052,11 +5020,29 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Turns off the Cortana voice assistant and removes Bing web results from the Windows Search bar..
+        ///   Looks up a localized string similar to Turns off the Cortana voice assistant and disables cloud search and web results in Windows Search (Windows 10 only)..
         /// </summary>
         internal static string Optimizer_SecurityAndPrivacy_DisableCortana_ShortDescription {
             get {
                 return ResourceManager.GetString("Optimizer.SecurityAndPrivacy.DisableCortana.ShortDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable Delivery Optimization (P2P).
+        /// </summary>
+        internal static string Optimizer_SecurityAndPrivacy_DisableDeliveryOptimization_Name {
+            get {
+                return ResourceManager.GetString("Optimizer.SecurityAndPrivacy.DisableDeliveryOptimization.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stops Windows from sharing or downloading update files from other PCs over peer-to-peer, so updates only come from Microsoft servers..
+        /// </summary>
+        internal static string Optimizer_SecurityAndPrivacy_DisableDeliveryOptimization_ShortDescription {
+            get {
+                return ResourceManager.GetString("Optimizer.SecurityAndPrivacy.DisableDeliveryOptimization.ShortDescription", resourceCulture);
             }
         }
         
@@ -3079,6 +5065,24 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disable Find My Device.
+        /// </summary>
+        internal static string Optimizer_SecurityAndPrivacy_DisableFindMyDevice_Name {
+            get {
+                return ResourceManager.GetString("Optimizer.SecurityAndPrivacy.DisableFindMyDevice.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disables the Find My Device feature that periodically reports your device&apos;s location to Microsoft..
+        /// </summary>
+        internal static string Optimizer_SecurityAndPrivacy_DisableFindMyDevice_ShortDescription {
+            get {
+                return ResourceManager.GetString("Optimizer.SecurityAndPrivacy.DisableFindMyDevice.ShortDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disable Location and Sensors.
         /// </summary>
         internal static string Optimizer_SecurityAndPrivacy_DisableLocationAndSensors_Name {
@@ -3093,6 +5097,24 @@ namespace optimizerDuck.Resources.Languages {
         internal static string Optimizer_SecurityAndPrivacy_DisableLocationAndSensors_ShortDescription {
             get {
                 return ResourceManager.GetString("Optimizer.SecurityAndPrivacy.DisableLocationAndSensors.ShortDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable News &amp; Interests.
+        /// </summary>
+        internal static string Optimizer_SecurityAndPrivacy_DisableNewsAndInterests_Name {
+            get {
+                return ResourceManager.GetString("Optimizer.SecurityAndPrivacy.DisableNewsAndInterests.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turns off the News and Interests feed and hides its taskbar button (Windows 10), and disables the Widgets board (Windows 11)..
+        /// </summary>
+        internal static string Optimizer_SecurityAndPrivacy_DisableNewsAndInterests_ShortDescription {
+            get {
+                return ResourceManager.GetString("Optimizer.SecurityAndPrivacy.DisableNewsAndInterests.ShortDescription", resourceCulture);
             }
         }
         
@@ -3142,29 +5164,20 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Disable Admin Prompts (UAC).
+        ///   Looks up a localized string similar to Hide Meet Now Button.
         /// </summary>
-        internal static string Optimizer_SecurityAndPrivacy_DisableUAC_Name {
+        internal static string Optimizer_SecurityAndPrivacy_HideMeetNowButton_Name {
             get {
-                return ResourceManager.GetString("Optimizer.SecurityAndPrivacy.DisableUAC.Name", resourceCulture);
+                return ResourceManager.GetString("Optimizer.SecurityAndPrivacy.HideMeetNowButton.Name", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Turns off User Account Control (UAC) windows that ask for permission when running apps as administrator..
+        ///   Looks up a localized string similar to Hides the Meet Now (Skype) button from the taskbar notification area. Windows 10 only..
         /// </summary>
-        internal static string Optimizer_SecurityAndPrivacy_DisableUAC_ShortDescription {
+        internal static string Optimizer_SecurityAndPrivacy_HideMeetNowButton_ShortDescription {
             get {
-                return ResourceManager.GetString("Optimizer.SecurityAndPrivacy.DisableUAC.ShortDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This value reflects the level of intervention and the safety of the optimization process. Please exercise caution and consider carefully before applying any optimization..
-        /// </summary>
-        internal static string Optimizer_UI_Risk_Help {
-            get {
-                return ResourceManager.GetString("Optimizer.UI.Risk.Help", resourceCulture);
+                return ResourceManager.GetString("Optimizer.SecurityAndPrivacy.HideMeetNowButton.ShortDescription", resourceCulture);
             }
         }
         
@@ -3178,7 +5191,7 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Risky.
+        ///   Looks up a localized string similar to Expert.
         /// </summary>
         internal static string Optimizer_UI_Risk_Risky {
             get {
@@ -3196,11 +5209,65 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Already optimal.
+        /// </summary>
+        internal static string Optimizer_UI_State_AlreadyOptimal {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.State.AlreadyOptimal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This machine already matches this optimization, so there is nothing to change..
+        /// </summary>
+        internal static string Optimizer_UI_State_AlreadyOptimal_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.State.AlreadyOptimal.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} steps changed, {1} were already correct, {2} did not apply, {3} were refused by Windows.
+        /// </summary>
+        internal static string Optimizer_UI_State_Applied_Summary {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.State.Applied.Summary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click to see each step of the last apply. {0}.
+        /// </summary>
+        internal static string Optimizer_UI_State_Applied_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.State.Applied.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click to see each step of the last apply..
+        /// </summary>
+        internal static string Optimizer_UI_State_Applied_Tooltip_NoSummary {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.State.Applied.Tooltip.NoSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to AMD.
         /// </summary>
         internal static string Optimizer_UI_Tags_Amd {
             get {
                 return ResourceManager.GetString("Optimizer.UI.Tags.Amd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This optimization is about a PC with an AMD graphics card, and does nothing on other machines..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Amd_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Amd.Tooltip", resourceCulture);
             }
         }
         
@@ -3214,11 +5281,29 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This optimization is about how sound is played and processed..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Audio_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Audio.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disk.
         /// </summary>
         internal static string Optimizer_UI_Tags_Disk {
             get {
                 return ResourceManager.GetString("Optimizer.UI.Tags.Disk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This optimization is about how Windows uses your disks..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Disk_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Disk.Tooltip", resourceCulture);
             }
         }
         
@@ -3232,11 +5317,11 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to These tags indicate which parts of the system the optimization will affect..
+        ///   Looks up a localized string similar to This optimization is about what your screen or graphics card outputs..
         /// </summary>
-        internal static string Optimizer_UI_Tags_Help {
+        internal static string Optimizer_UI_Tags_Display_Tooltip {
             get {
-                return ResourceManager.GetString("Optimizer.UI.Tags.Help", resourceCulture);
+                return ResourceManager.GetString("Optimizer.UI.Tags.Display.Tooltip", resourceCulture);
             }
         }
         
@@ -3250,11 +5335,29 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This optimization is about a PC with an Intel graphics card, and does nothing on other machines..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Intel_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Intel.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Latency.
         /// </summary>
         internal static string Optimizer_UI_Tags_Latency {
             get {
                 return ResourceManager.GetString("Optimizer.UI.Tags.Latency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This optimization is about delay in input, games or sound..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Latency_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Latency.Tooltip", resourceCulture);
             }
         }
         
@@ -3268,11 +5371,29 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This optimization is about networking, the connection and the traffic on it..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Network_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Network.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Network connection required.
         /// </summary>
         internal static string Optimizer_UI_Tags_NetworkRequired {
             get {
                 return ResourceManager.GetString("Optimizer.UI.Tags.NetworkRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This optimization needs an internet connection, because it downloads something..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_NetworkRequired_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.NetworkRequired.Tooltip", resourceCulture);
             }
         }
         
@@ -3286,11 +5407,29 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This optimization is about a PC with an NVIDIA graphics card, and does nothing on other machines..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Nvidia_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Nvidia.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Performance.
         /// </summary>
         internal static string Optimizer_UI_Tags_Performance {
             get {
                 return ResourceManager.GetString("Optimizer.UI.Tags.Performance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This optimization is about performance and background work..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Performance_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Performance.Tooltip", resourceCulture);
             }
         }
         
@@ -3304,11 +5443,29 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This optimization is about power, so battery life, heat or fan noise..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Power_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Power.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Privacy.
         /// </summary>
         internal static string Optimizer_UI_Tags_Privacy {
             get {
                 return ResourceManager.GetString("Optimizer.UI.Tags.Privacy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This optimization is about the data Windows collects and sends..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Privacy_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Privacy.Tooltip", resourceCulture);
             }
         }
         
@@ -3322,11 +5479,29 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This optimization is about how Windows uses memory..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Ram_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Ram.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Security.
         /// </summary>
         internal static string Optimizer_UI_Tags_Security {
             get {
                 return ResourceManager.GetString("Optimizer.UI.Tags.Security", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This optimization is about security settings in Windows..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Security_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Security.Tooltip", resourceCulture);
             }
         }
         
@@ -3340,6 +5515,15 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This optimization is about a core part of Windows, a component or a policy, so it is worth reading what it does first..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_System_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.System.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Visual.
         /// </summary>
         internal static string Optimizer_UI_Tags_Visual {
@@ -3349,11 +5533,110 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This optimization is about how Windows looks, its effects and its animations..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Visual_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Visual.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows 10 only.
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Windows10Only {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Windows10Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This optimization is only for Windows 10 and does nothing on Windows 11..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Windows10Only_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Windows10Only.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows 11 only.
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Windows11Only {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Windows11Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This optimization is only for Windows 11 and is blocked on Windows 10..
+        /// </summary>
+        internal static string Optimizer_UI_Tags_Windows11Only_Tooltip {
+            get {
+                return ResourceManager.GetString("Optimizer.UI.Tags.Windows11Only.Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User Experience.
         /// </summary>
         internal static string Optimizer_UserExperience {
             get {
                 return ResourceManager.GetString("Optimizer.UserExperience", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable Microsoft 365 Ads in Settings.
+        /// </summary>
+        internal static string Optimizer_UserExperience_DisableSettings365Ads_Name {
+            get {
+                return ResourceManager.GetString("Optimizer.UserExperience.DisableSettings365Ads.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Removes the Microsoft 365 and Copilot promotional content from the Settings Home page..
+        /// </summary>
+        internal static string Optimizer_UserExperience_DisableSettings365Ads_ShortDescription {
+            get {
+                return ResourceManager.GetString("Optimizer.UserExperience.DisableSettings365Ads.ShortDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable Start Menu Web Search.
+        /// </summary>
+        internal static string Optimizer_UserExperience_DisableStartMenuWebSearch_Name {
+            get {
+                return ResourceManager.GetString("Optimizer.UserExperience.DisableStartMenuWebSearch.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turn off web search for Windows Start Menu to load the local search results faster..
+        /// </summary>
+        internal static string Optimizer_UserExperience_DisableStartMenuWebSearch_ShortDescription {
+            get {
+                return ResourceManager.GetString("Optimizer.UserExperience.DisableStartMenuWebSearch.ShortDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide Recommended Section in Start.
+        /// </summary>
+        internal static string Optimizer_UserExperience_DisableStartRecommended_Name {
+            get {
+                return ResourceManager.GetString("Optimizer.UserExperience.DisableStartRecommended.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hides the Recommended section from the Start menu to reduce clutter and stop recent files and apps from being shown..
+        /// </summary>
+        internal static string Optimizer_UserExperience_DisableStartRecommended_ShortDescription {
+            get {
+                return ResourceManager.GetString("Optimizer.UserExperience.DisableStartRecommended.ShortDescription", resourceCulture);
             }
         }
         
@@ -3372,6 +5655,24 @@ namespace optimizerDuck.Resources.Languages {
         internal static string Optimizer_UserExperience_DisableVisualEffects_ShortDescription {
             get {
                 return ResourceManager.GetString("Optimizer.UserExperience.DisableVisualEffects.ShortDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximize update pause limit.
+        /// </summary>
+        internal static string Optimizer_UserExperience_MaximizeUpdatePauseLimit_Name {
+            get {
+                return ResourceManager.GetString("Optimizer.UserExperience.MaximizeUpdatePauseLimit.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sets the Windows Update pause ceiling to the largest supported value. Only honored by Windows versions that still support this setting; security updates stay paused while it is active..
+        /// </summary>
+        internal static string Optimizer_UserExperience_MaximizeUpdatePauseLimit_ShortDescription {
+            get {
+                return ResourceManager.GetString("Optimizer.UserExperience.MaximizeUpdatePauseLimit.ShortDescription", resourceCulture);
             }
         }
         
@@ -3484,8 +5785,7 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restore Point allows you to revert your system to a previous state.
-        ///It&apos;s a safety measure to protect your Windows before applying changes..
+        ///   Looks up a localized string similar to Restore Point allows you to revert your system to a previous state. It&apos;s a safety measure to protect your Windows before applying changes..
         /// </summary>
         internal static string RestorePointDialog_Description {
             get {
@@ -3494,66 +5794,11 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The application will automatically enable System Restore and create a checkpoint named &quot;optimizerDuck...&quot;.
-        ///This ensures you can always go back if anything goes wrong..
+        ///   Looks up a localized string similar to The application will automatically enable System Restore and create a checkpoint named &quot;optimizerDuck...&quot;. This ensures you can always go back if anything goes wrong..
         /// </summary>
         internal static string RestorePointDialog_Help {
             get {
                 return ResourceManager.GetString("RestorePointDialog.Help", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Revert file is empty.
-        /// </summary>
-        internal static string Revert_Error_FileEmpty {
-            get {
-                return ResourceManager.GetString("Revert.Error.FileEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Revert file not found.
-        /// </summary>
-        internal static string Revert_Error_FileNotFound {
-            get {
-                return ResourceManager.GetString("Revert.Error.FileNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid revert data for {0}: {1}.
-        /// </summary>
-        internal static string Revert_Error_InvalidData {
-            get {
-                return ResourceManager.GetString("Revert.Error.InvalidData", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid revert data.
-        /// </summary>
-        internal static string Revert_Error_InvalidJson {
-            get {
-                return ResourceManager.GetString("Revert.Error.InvalidJson", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid JSON format: {0}.
-        /// </summary>
-        internal static string Revert_Error_InvalidJsonFormat {
-            get {
-                return ResourceManager.GetString("Revert.Error.InvalidJsonFormat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid revert steps: {0}.
-        /// </summary>
-        internal static string Revert_Error_InvalidSteps {
-            get {
-                return ResourceManager.GetString("Revert.Error.InvalidSteps", resourceCulture);
             }
         }
         
@@ -3576,38 +5821,119 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to OptimizationId mismatch..
-        /// </summary>
-        internal static string Revert_Error_OptimizationIdMismatch {
-            get {
-                return ResourceManager.GetString("Revert.Error.OptimizationIdMismatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to read revert data: {0}.
-        /// </summary>
-        internal static string Revert_Error_ReadFailed {
-            get {
-                return ResourceManager.GetString("Revert.Error.ReadFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to revert {0}: {1}.
-        /// </summary>
-        internal static string Revert_Error_RevertFailed {
-            get {
-                return ResourceManager.GetString("Revert.Error.RevertFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Revert step failed.
         /// </summary>
         internal static string Revert_Error_StepFailed {
             get {
                 return ResourceManager.GetString("Revert.Error.StepFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Revert data for {0} could not be read, so nothing was reverted. The file was kept at {1}..
+        /// </summary>
+        internal static string Revert_Error_UnreadableData {
+            get {
+                return ResourceManager.GetString("Revert.Error.UnreadableData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore hibernation state.
+        /// </summary>
+        internal static string Revert_Hibernation_Description {
+            get {
+                return ResourceManager.GetString("Revert.Hibernation.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hibernation state was unknown when this was applied, so nothing is restored.
+        /// </summary>
+        internal static string Revert_Hibernation_Description_Unknown {
+            get {
+                return ResourceManager.GetString("Revert.Hibernation.Description.Unknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to restore hibernation: {0}.
+        /// </summary>
+        internal static string Revert_Hibernation_Error_RestoreFailed {
+            get {
+                return ResourceManager.GetString("Revert.Hibernation.Error.RestoreFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore previous active power plan {0}.
+        /// </summary>
+        internal static string Revert_PowerPlan_Description {
+            get {
+                return ResourceManager.GetString("Revert.PowerPlan.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installed power plan {0}.
+        /// </summary>
+        internal static string Revert_PowerPlan_Description_Set {
+            get {
+                return ResourceManager.GetString("Revert.PowerPlan.Description.Set", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to delete optimizerDuck power plan: {0}.
+        /// </summary>
+        internal static string Revert_PowerPlan_Error_DeleteFailed {
+            get {
+                return ResourceManager.GetString("Revert.PowerPlan.Error.DeleteFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nothing to revert: no previous or installed power plan recorded..
+        /// </summary>
+        internal static string Revert_PowerPlan_Error_NothingToDo {
+            get {
+                return ResourceManager.GetString("Revert.PowerPlan.Error.NothingToDo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to restore previous power plan: {0}..
+        /// </summary>
+        internal static string Revert_PowerPlan_Error_RestoreFailed {
+            get {
+                return ResourceManager.GetString("Revert.PowerPlan.Error.RestoreFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restored power plan {0} but could not verify the active plan..
+        /// </summary>
+        internal static string Revert_PowerPlan_Error_VerifyFailed {
+            get {
+                return ResourceManager.GetString("Revert.PowerPlan.Error.VerifyFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power plan verify failed: expected {0}, active is {1}..
+        /// </summary>
+        internal static string Revert_PowerPlan_Error_VerifyMismatch {
+            get {
+                return ResourceManager.GetString("Revert.PowerPlan.Error.VerifyMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore power setting {0}/{1}/{2}.
+        /// </summary>
+        internal static string Revert_PowerSetting_Description {
+            get {
+                return ResourceManager.GetString("Revert.PowerSetting.Description", resourceCulture);
             }
         }
         
@@ -3648,6 +5974,15 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Revert registry: {0}.
+        /// </summary>
+        internal static string Revert_Registry_Description_RevertUnknown {
+            get {
+                return ResourceManager.GetString("Revert.Registry.Description.RevertUnknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disable scheduled task: {0}.
         /// </summary>
         internal static string Revert_ScheduledTask_Description_Disable {
@@ -3680,6 +6015,42 @@ namespace optimizerDuck.Resources.Languages {
         internal static string Revert_Shell_Description_Run {
             get {
                 return ResourceManager.GetString("Revert.Shell.Description.Run", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Revert command failed with exit code {0}.
+        /// </summary>
+        internal static string Revert_Shell_Error_CommandFailed {
+            get {
+                return ResourceManager.GetString("Revert.Shell.Error.CommandFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown shell type.
+        /// </summary>
+        internal static string Revert_Shell_Error_UnknownShellType {
+            get {
+                return ResourceManager.GetString("Revert.Shell.Error.UnknownShellType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore USB selective suspend power states.
+        /// </summary>
+        internal static string Revert_UsbPower_Description {
+            get {
+                return ResourceManager.GetString("Revert.UsbPower.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to restore USB power states.
+        /// </summary>
+        internal static string Revert_UsbPower_Error_RestoreFailed {
+            get {
+                return ResourceManager.GetString("Revert.UsbPower.Error.RestoreFailed", resourceCulture);
             }
         }
         
@@ -3792,15 +6163,6 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to State.
-        /// </summary>
-        internal static string ScheduledTasks_Details_State {
-            get {
-                return ResourceManager.GetString("ScheduledTasks.Details.State", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Triggers.
         /// </summary>
         internal static string ScheduledTasks_Details_Triggers {
@@ -3810,20 +6172,29 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Are you sure you want to delete the task &quot;{0}&quot;? This action cannot be undone..
-        /// </summary>
-        internal static string ScheduledTasks_Dialog_DeleteMessage {
-            get {
-                return ResourceManager.GetString("ScheduledTasks.Dialog.DeleteMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Delete Scheduled Task.
         /// </summary>
         internal static string ScheduledTasks_Dialog_DeleteTitle {
             get {
                 return ResourceManager.GetString("ScheduledTasks.Dialog.DeleteTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deleting a scheduled task is permanent. The task will no longer run automatically..
+        /// </summary>
+        internal static string ScheduledTasks_Dialog_DeleteWarning {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.Dialog.DeleteWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings.
+        /// </summary>
+        internal static string ScheduledTasks_Dialog_Settings {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.Dialog.Settings", resourceCulture);
             }
         }
         
@@ -3882,38 +6253,11 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create Task.
-        /// </summary>
-        internal static string ScheduledTasks_Menu_CreateTask {
-            get {
-                return ResourceManager.GetString("ScheduledTasks.Menu.CreateTask", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Open Task Scheduler.
         /// </summary>
         internal static string ScheduledTasks_Menu_OpenSettings {
             get {
                 return ResourceManager.GetString("ScheduledTasks.Menu.OpenSettings", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} has been created successfully..
-        /// </summary>
-        internal static string ScheduledTasks_Snackbar_Create_Message {
-            get {
-                return ResourceManager.GetString("ScheduledTasks.Snackbar.Create.Message", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Task Created.
-        /// </summary>
-        internal static string ScheduledTasks_Snackbar_Create_Title {
-            get {
-                return ResourceManager.GetString("ScheduledTasks.Snackbar.Create.Title", resourceCulture);
             }
         }
         
@@ -4008,164 +6352,344 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Access denied.
+        ///   Looks up a localized string similar to Disabled.
         /// </summary>
-        internal static string Service_Common_Error_AccessDenied {
+        internal static string ScheduledTasks_State_Disabled {
             get {
-                return ResourceManager.GetString("Service.Common.Error.AccessDenied", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.State.Disabled", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create registry key {0}.
+        ///   Looks up a localized string similar to Queued.
         /// </summary>
-        internal static string Service_Registry_Description_CreateKey {
+        internal static string ScheduledTasks_State_Queued {
             get {
-                return ResourceManager.GetString("Service.Registry.Description.CreateKey", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.State.Queued", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Delete registry value: {0}\{1}.
+        ///   Looks up a localized string similar to Ready.
         /// </summary>
-        internal static string Service_Registry_Description_Delete {
+        internal static string ScheduledTasks_State_Ready {
             get {
-                return ResourceManager.GetString("Service.Registry.Description.Delete", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.State.Ready", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Delete registry key {0}.
+        ///   Looks up a localized string similar to Running.
         /// </summary>
-        internal static string Service_Registry_Description_DeleteKey {
+        internal static string ScheduledTasks_State_Running {
             get {
-                return ResourceManager.GetString("Service.Registry.Description.DeleteKey", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.State.Running", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Write registry value: {0}\{1}.
+        ///   Looks up a localized string similar to At startup.
         /// </summary>
-        internal static string Service_Registry_Description_Write {
+        internal static string ScheduledTasks_Trigger_Boot {
             get {
-                return ResourceManager.GetString("Service.Registry.Description.Write", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Boot", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Access denied (protected hive).
+        ///   Looks up a localized string similar to Daily.
         /// </summary>
-        internal static string Service_Registry_Error_AccessDeniedProtectedHive {
+        internal static string ScheduledTasks_Trigger_Daily {
             get {
-                return ResourceManager.GetString("Service.Registry.Error.AccessDeniedProtectedHive", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Daily", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to create/open subkey.
+        ///   Looks up a localized string similar to On event.
         /// </summary>
-        internal static string Service_Registry_Error_CreateOrOpenSubkeyFailed {
+        internal static string ScheduledTasks_Trigger_Event {
             get {
-                return ResourceManager.GetString("Service.Registry.Error.CreateOrOpenSubkeyFailed", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Event", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unauthorized access.
+        ///   Looks up a localized string similar to When idle.
         /// </summary>
-        internal static string Service_Registry_Error_UnauthorizedAccess {
+        internal static string ScheduledTasks_Trigger_Idle {
             get {
-                return ResourceManager.GetString("Service.Registry.Error.UnauthorizedAccess", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Idle", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Registry.
+        ///   Looks up a localized string similar to At log on.
         /// </summary>
-        internal static string Service_Registry_Name {
+        internal static string ScheduledTasks_Trigger_Logon {
             get {
-                return ResourceManager.GetString("Service.Registry.Name", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Logon", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Disable scheduled task: {0}.
+        ///   Looks up a localized string similar to Monthly.
         /// </summary>
-        internal static string Service_ScheduledTask_Description_Disable {
+        internal static string ScheduledTasks_Trigger_Monthly {
             get {
-                return ResourceManager.GetString("Service.ScheduledTask.Description.Disable", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Monthly", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable scheduled task: {0}.
+        ///   Looks up a localized string similar to Monthly.
         /// </summary>
-        internal static string Service_ScheduledTask_Description_Enable {
+        internal static string ScheduledTasks_Trigger_MonthlyDOW {
             get {
-                return ResourceManager.GetString("Service.ScheduledTask.Description.Enable", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.MonthlyDOW", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Scheduled Task.
+        ///   Looks up a localized string similar to Trigger.
         /// </summary>
-        internal static string Service_ScheduledTask_Name {
+        internal static string ScheduledTasks_Trigger_Other {
             get {
-                return ResourceManager.GetString("Service.ScheduledTask.Name", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Other", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Change service &apos;{0}&apos; to {1} startup.
+        ///   Looks up a localized string similar to At registration.
         /// </summary>
-        internal static string Service_Service_Description_Change {
+        internal static string ScheduledTasks_Trigger_Registration {
             get {
-                return ResourceManager.GetString("Service.Service.Description.Change", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Registration", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ChangeStartMode failed (code: {0}).
+        ///   Looks up a localized string similar to Console connect.
         /// </summary>
-        internal static string Service_Service_Error_ChangeStartModeFailedWithCode {
+        internal static string ScheduledTasks_Trigger_Session_ConsoleConnect {
             get {
-                return ResourceManager.GetString("Service.Service.Error.ChangeStartModeFailedWithCode", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Session.ConsoleConnect", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to change service &apos;{0}&apos;: {1}.
+        ///   Looks up a localized string similar to Console disconnect.
         /// </summary>
-        internal static string Service_Service_Error_ExceptionOccurred {
+        internal static string ScheduledTasks_Trigger_Session_ConsoleDisconnect {
             get {
-                return ResourceManager.GetString("Service.Service.Error.ExceptionOccurred", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Session.ConsoleDisconnect", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Service not found.
+        ///   Looks up a localized string similar to Session lock.
         /// </summary>
-        internal static string Service_Service_Error_NotFound {
+        internal static string ScheduledTasks_Trigger_Session_Lock {
             get {
-                return ResourceManager.GetString("Service.Service.Error.NotFound", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Session.Lock", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to update registry for startup type.
+        ///   Looks up a localized string similar to Remote connect.
         /// </summary>
-        internal static string Service_Service_Error_UpdateRegistryForStartupTypeFailed {
+        internal static string ScheduledTasks_Trigger_Session_RemoteConnect {
             get {
-                return ResourceManager.GetString("Service.Service.Error.UpdateRegistryForStartupTypeFailed", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Session.RemoteConnect", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Service.
+        ///   Looks up a localized string similar to Remote disconnect.
         /// </summary>
-        internal static string Service_Service_Name {
+        internal static string ScheduledTasks_Trigger_Session_RemoteDisconnect {
             get {
-                return ResourceManager.GetString("Service.Service.Name", resourceCulture);
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Session.RemoteDisconnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Session unlock.
+        /// </summary>
+        internal static string ScheduledTasks_Trigger_Session_Unlock {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Session.Unlock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to On session change.
+        /// </summary>
+        internal static string ScheduledTasks_Trigger_SessionStateChange {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.Trigger.SessionStateChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to At a specific time.
+        /// </summary>
+        internal static string ScheduledTasks_Trigger_Time {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to every.
+        /// </summary>
+        internal static string ScheduledTasks_Trigger_Week_Every {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Week.Every", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to first.
+        /// </summary>
+        internal static string ScheduledTasks_Trigger_Week_First {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Week.First", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to fourth.
+        /// </summary>
+        internal static string ScheduledTasks_Trigger_Week_Fourth {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Week.Fourth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to last.
+        /// </summary>
+        internal static string ScheduledTasks_Trigger_Week_Last {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Week.Last", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to second.
+        /// </summary>
+        internal static string ScheduledTasks_Trigger_Week_Second {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Week.Second", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to third.
+        /// </summary>
+        internal static string ScheduledTasks_Trigger_Week_Third {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Week.Third", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Weekly.
+        /// </summary>
+        internal static string ScheduledTasks_Trigger_Weekly {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.Trigger.Weekly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Every {0} day(s), at {1}.
+        /// </summary>
+        internal static string ScheduledTasks_TriggerDetail_Daily {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.TriggerDetail.Daily", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to after {0}.
+        /// </summary>
+        internal static string ScheduledTasks_TriggerDetail_Delay {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.TriggerDetail.Delay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to On day(s) {0} of {1}.
+        /// </summary>
+        internal static string ScheduledTasks_TriggerDetail_Monthly {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.TriggerDetail.Monthly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} {1} of {2}.
+        /// </summary>
+        internal static string ScheduledTasks_TriggerDetail_MonthlyDOW {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.TriggerDetail.MonthlyDOW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  (repeat every {0}).
+        /// </summary>
+        internal static string ScheduledTasks_TriggerDetail_Repeat {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.TriggerDetail.Repeat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  (repeat every {0} for {1}).
+        /// </summary>
+        internal static string ScheduledTasks_TriggerDetail_RepeatFor {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.TriggerDetail.RepeatFor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to At {0}.
+        /// </summary>
+        internal static string ScheduledTasks_TriggerDetail_Time {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.TriggerDetail.Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to for user {0}.
+        /// </summary>
+        internal static string ScheduledTasks_TriggerDetail_User {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.TriggerDetail.User", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to for user {0} after {1}.
+        /// </summary>
+        internal static string ScheduledTasks_TriggerDetail_UserDelay {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.TriggerDetail.UserDelay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Every {0} week(s) on {1}, at {2}.
+        /// </summary>
+        internal static string ScheduledTasks_TriggerDetail_Weekly {
+            get {
+                return ResourceManager.GetString("ScheduledTasks.TriggerDetail.Weekly", resourceCulture);
             }
         }
         
@@ -4184,15 +6708,6 @@ namespace optimizerDuck.Resources.Languages {
         internal static string Service_Shell_Error_TimedOut {
             get {
                 return ResourceManager.GetString("Service.Shell.Error.TimedOut", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Shell.
-        /// </summary>
-        internal static string Service_Shell_Name {
-            get {
-                return ResourceManager.GetString("Service.Shell.Name", resourceCulture);
             }
         }
         
@@ -4233,8 +6748,7 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Thank you for your trust and support &lt;3!
-        ///Current version: {0}.
+        ///   Looks up a localized string similar to Current version: {0}.
         /// </summary>
         internal static string Settings_About_Duck_Description {
             get {
@@ -4272,18 +6786,18 @@ namespace optimizerDuck.Resources.Languages {
         /// <summary>
         ///   Looks up a localized string similar to Delete all files downloaded during the optimization process..
         /// </summary>
-        internal static string Settings_Advanced_ClearResources_Description {
+        internal static string Settings_Advanced_ClearDownloads_Description {
             get {
-                return ResourceManager.GetString("Settings.Advanced.ClearResources.Description", resourceCulture);
+                return ResourceManager.GetString("Settings.Advanced.ClearDownloads.Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clear resources.
+        ///   Looks up a localized string similar to Clear downloads.
         /// </summary>
-        internal static string Settings_Advanced_ClearResources_Title {
+        internal static string Settings_Advanced_ClearDownloads_Title {
             get {
-                return ResourceManager.GetString("Settings.Advanced.ClearResources.Title", resourceCulture);
+                return ResourceManager.GetString("Settings.Advanced.ClearDownloads.Title", resourceCulture);
             }
         }
         
@@ -4360,6 +6874,24 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enable smooth scrolling animation for a more fluid scrolling experience. Turn off if you experience lag..
+        /// </summary>
+        internal static string Settings_Appearance_SmoothScrolling_Description {
+            get {
+                return ResourceManager.GetString("Settings.Appearance.SmoothScrolling.Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Smooth Scrolling.
+        /// </summary>
+        internal static string Settings_Appearance_SmoothScrolling_Title {
+            get {
+                return ResourceManager.GetString("Settings.Appearance.SmoothScrolling.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Dark.
         /// </summary>
         internal static string Settings_Appearance_ThemeSelector_Dark {
@@ -4432,11 +6964,11 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are about to delete all resources downloaded or generated during the optimization process. Please note that this action is permanent and cannot be undone, so make sure you are certain before proceeding..
+        ///   Looks up a localized string similar to You are about to delete all files downloaded during the optimization process. Please note that this action is permanent and cannot be undone, so make sure you are certain before proceeding..
         /// </summary>
-        internal static string Settings_ClearResources_Description {
+        internal static string Settings_ClearDownloads_Description {
             get {
-                return ResourceManager.GetString("Settings.ClearResources.Description", resourceCulture);
+                return ResourceManager.GetString("Settings.ClearDownloads.Description", resourceCulture);
             }
         }
         
@@ -4455,24 +6987,6 @@ namespace optimizerDuck.Resources.Languages {
         internal static string Settings_Header_Title {
             get {
                 return ResourceManager.GetString("Settings.Header.Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to You need to restart the application to apply the new language..
-        /// </summary>
-        internal static string Settings_LanguageChanged_Description {
-            get {
-                return ResourceManager.GetString("Settings.LanguageChanged.Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Language change.
-        /// </summary>
-        internal static string Settings_LanguageChanged_Title {
-            get {
-                return ResourceManager.GetString("Settings.LanguageChanged.Title", resourceCulture);
             }
         }
         
@@ -4540,6 +7054,15 @@ namespace optimizerDuck.Resources.Languages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Customize.
+        /// </summary>
+        internal static string Sidebar_Customize {
+            get {
+                return ResourceManager.GetString("Sidebar.Customize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Dashboard.
         /// </summary>
         internal static string Sidebar_Dashboard {
@@ -4554,15 +7077,6 @@ namespace optimizerDuck.Resources.Languages {
         internal static string Sidebar_DiskCleanup {
             get {
                 return ResourceManager.GetString("Sidebar.DiskCleanup", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Features.
-        /// </summary>
-        internal static string Sidebar_Features {
-            get {
-                return ResourceManager.GetString("Sidebar.Features", resourceCulture);
             }
         }
         
@@ -4635,6 +7149,87 @@ namespace optimizerDuck.Resources.Languages {
         internal static string Snackbar_OpenLinkFailed_Title {
             get {
                 return ResourceManager.GetString("Snackbar.OpenLinkFailed.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Startup Folder (All Users).
+        /// </summary>
+        internal static string Startup_Location_CommonStartupFolder {
+            get {
+                return ResourceManager.GetString("Startup.Location.CommonStartupFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registry (Current User).
+        /// </summary>
+        internal static string Startup_Location_RegistryHKCURun {
+            get {
+                return ResourceManager.GetString("Startup.Location.RegistryHKCURun", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registry RunOnce (Current User).
+        /// </summary>
+        internal static string Startup_Location_RegistryHKCURunOnce {
+            get {
+                return ResourceManager.GetString("Startup.Location.RegistryHKCURunOnce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registry (Local Machine).
+        /// </summary>
+        internal static string Startup_Location_RegistryHKLMRun {
+            get {
+                return ResourceManager.GetString("Startup.Location.RegistryHKLMRun", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registry (Local Machine, 32-bit).
+        /// </summary>
+        internal static string Startup_Location_RegistryHKLMRun32 {
+            get {
+                return ResourceManager.GetString("Startup.Location.RegistryHKLMRun32", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registry RunOnce (Local Machine).
+        /// </summary>
+        internal static string Startup_Location_RegistryHKLMRunOnce {
+            get {
+                return ResourceManager.GetString("Startup.Location.RegistryHKLMRunOnce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registry RunOnce (Local Machine, 32-bit).
+        /// </summary>
+        internal static string Startup_Location_RegistryHKLMRunOnce32 {
+            get {
+                return ResourceManager.GetString("Startup.Location.RegistryHKLMRunOnce32", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Startup Folder (Current User).
+        /// </summary>
+        internal static string Startup_Location_UserStartupFolder {
+            get {
+                return ResourceManager.GetString("Startup.Location.UserStartupFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Microsoft Store App.
+        /// </summary>
+        internal static string Startup_Location_UwpStartupTask {
+            get {
+                return ResourceManager.GetString("Startup.Location.UwpStartupTask", resourceCulture);
             }
         }
         
@@ -4770,6 +7365,24 @@ namespace optimizerDuck.Resources.Languages {
         internal static string StartupManager_Tasks_Title {
             get {
                 return ResourceManager.GetString("StartupManager.Tasks.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Join the Discord community.
+        /// </summary>
+        internal static string TitleBar_Discord {
+            get {
+                return ResourceManager.GetString("TitleBar.Discord", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Support the Project.
+        /// </summary>
+        internal static string TitleBar_Support {
+            get {
+                return ResourceManager.GetString("TitleBar.Support", resourceCulture);
             }
         }
     }

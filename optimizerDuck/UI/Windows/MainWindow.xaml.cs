@@ -1,10 +1,16 @@
-﻿using System.Windows;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using optimizerDuck.Common.Helpers;
 using optimizerDuck.Domain.Abstractions;
 using optimizerDuck.Domain.Configuration;
 using optimizerDuck.Resources.Languages;
-using optimizerDuck.Services;
-using optimizerDuck.Services.Managers;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.Customize;
+using optimizerDuck.UI.Controls;
 using optimizerDuck.UI.Dialogs;
 using optimizerDuck.UI.Pages;
 using optimizerDuck.UI.ViewModels.Windows;
@@ -16,6 +22,7 @@ namespace optimizerDuck.UI.Windows;
 
 public partial class MainWindow : IWindow
 {
+    private readonly ILogger<MainWindow> _logger;
     private readonly IContentDialogService _contentDialogService;
     private readonly IOptionsMonitor<AppSettings> _appOptionsMonitor;
     private readonly ConfigManager _configManager;
@@ -28,13 +35,22 @@ public partial class MainWindow : IWindow
         INavigationViewPageProvider pageProvider,
         IOptionsMonitor<AppSettings> appOptionsMonitor,
         ISnackbarService snackbarService,
-        FeatureRegistry featureRegistry
+        CustomizeRegistry customizeRegistry,
+        ILogger<MainWindow> logger
     )
     {
+        _logger = logger;
         _contentDialogService = contentDialogService;
         _appOptionsMonitor = appOptionsMonitor;
         _configManager = configManager;
         InitializeComponent();
+
+        // Mica needs Windows 11; on older systems WPF-UI leaves a full-window
+        // glass frame that renders white on virtualized display stacks (#71).
+        if (Shared.IsWindows11OrGreater)
+        {
+            WindowBackdropType = WindowBackdropType.Mica;
+        }
 
         DataContext = viewModel;
 
@@ -44,41 +60,76 @@ public partial class MainWindow : IWindow
 
         RootNavigation.SetPageProviderService(pageProvider);
 
-        var toggleItems = featureRegistry.GetNavigationItems();
-        foreach (var item in toggleItems)
-            FeaturesMenuItem.MenuItems.Add(item);
-
         RootNavigation.Loaded += OnRootNavigationLoaded;
+    }
+
+    internal void UpdatePendingIndicator(bool hasPending)
+    {
+        AppTitleText.Text = hasPending ? "optimizerDuck*" : "optimizerDuck";
+        Title = hasPending ? "optimizerDuck*" : "optimizerDuck";
     }
 
     private async void OnRootNavigationLoaded(object sender, RoutedEventArgs e)
     {
-        RootNavigation.Loaded -= OnRootNavigationLoaded;
-
-        if (!_appOptionsMonitor.CurrentValue.App.LegalAccepted)
+        try
         {
-            var legalDialog = new LegalDialog();
-            var dialog = new ContentDialog
-            {
-                Title = Translations.LegalDialog_Title,
-                Content = legalDialog,
-                PrimaryButtonText = Translations.Button_Accept,
-                CloseButtonText = Translations.Button_Close,
-                DefaultButton = ContentDialogButton.Primary,
-            };
+            RootNavigation.Loaded -= OnRootNavigationLoaded;
 
-            var result = await _contentDialogService.ShowAsync(dialog, CancellationToken.None);
-            if (result == ContentDialogResult.Primary)
+            if (!_appOptionsMonitor.CurrentValue.App.LegalAccepted)
             {
-                await _configManager.SetAsync(x => x.App.LegalAccepted, true);
+                var legalDialog =
+                    (Application.Current as App)?.AppHost?.Services.GetService<LegalDialog>()
+                    ?? new LegalDialog();
+
+                var dialog = new ContentDialog
+                {
+                    Content = legalDialog,
+                    DefaultButton = ContentDialogButton.Primary,
+                };
+
+                // Bind to Loc so title/buttons update when language changes inside the dialog
+                dialog.SetBinding(
+                    ContentDialog.TitleProperty,
+                    new Binding("[LegalDialog.Title]")
+                    {
+                        Source = Loc.Instance,
+                        Mode = BindingMode.OneWay,
+                    }
+                );
+                dialog.SetBinding(
+                    ContentDialog.PrimaryButtonTextProperty,
+                    new Binding("[Button.Accept]")
+                    {
+                        Source = Loc.Instance,
+                        Mode = BindingMode.OneWay,
+                    }
+                );
+                dialog.SetBinding(
+                    ContentDialog.CloseButtonTextProperty,
+                    new Binding("[Button.Close]")
+                    {
+                        Source = Loc.Instance,
+                        Mode = BindingMode.OneWay,
+                    }
+                );
+
+                var result = await _contentDialogService.ShowAsync(dialog, CancellationToken.None);
+                if (result == ContentDialogResult.Primary)
+                {
+                    await _configManager.SetAsync(x => x.App.LegalAccepted, true);
+                }
+                else
+                {
+                    Close();
+                    return;
+                }
             }
-            else
-            {
-                Close();
-                return;
-            }
+
+            RootNavigation.Navigate(typeof(DashboardPage));
         }
-
-        RootNavigation.Navigate(typeof(DashboardPage));
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during navigation initialization");
+        }
     }
 }

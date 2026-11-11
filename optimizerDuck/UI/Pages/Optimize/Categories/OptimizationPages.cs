@@ -1,6 +1,7 @@
-﻿using optimizerDuck.UI.ViewModels.Optimizer;
+using optimizerDuck.UI.Pages.Optimizations;
+using optimizerDuck.UI.ViewModels.Optimizer;
 
-namespace optimizerDuck.UI.Pages.Optimizations;
+namespace optimizerDuck.UI.Pages.Optimize.Categories;
 
 public sealed class PowerManagementOptimizerPage : OptimizationPage
 {
@@ -50,6 +51,15 @@ public sealed class PerformanceOptimizerPage : OptimizationPage
 public sealed class SecurityAndPrivacyOptimizerPage : OptimizationPage
 {
     public SecurityAndPrivacyOptimizerPage(OptimizationCategoryViewModel viewModel)
+        : base(viewModel)
+    {
+        InitializeComponent();
+    }
+}
+
+public sealed class AIOptimizerPage : OptimizationPage
+{
+    public AIOptimizerPage(OptimizationCategoryViewModel viewModel)
         : base(viewModel)
     {
         InitializeComponent();

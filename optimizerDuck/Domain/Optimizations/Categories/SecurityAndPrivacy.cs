@@ -1,18 +1,22 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
+using optimizerDuck.Common.Extensions;
 using optimizerDuck.Domain.Abstractions;
 using optimizerDuck.Domain.Attributes;
+using optimizerDuck.Domain.Conditions;
+using optimizerDuck.Domain.Execution;
 using optimizerDuck.Domain.Optimizations.Models;
+using optimizerDuck.Domain.Optimizations.Models.ScheduledTask;
 using optimizerDuck.Domain.Optimizations.Models.Services;
 using optimizerDuck.Domain.UI;
-using optimizerDuck.Services.Managers;
-using optimizerDuck.Services.OptimizationServices;
-using optimizerDuck.UI.Pages.Optimizations;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.System.Primitives;
+using optimizerDuck.UI.Pages.Optimize.Categories;
 
 namespace optimizerDuck.Domain.Optimizations.Categories;
 
 [OptimizationCategory(typeof(SecurityAndPrivacyOptimizerPage))]
-public class SecurityAndPrivacy : IOptimizationCategory
+public class SecurityAndPrivacy : LocalizedObject, IOptimizationCategory
 {
     public string Name => Loc.Instance[$"Optimizer.{nameof(SecurityAndPrivacy)}"];
     public OptimizationCategoryOrder Order { get; init; } =
@@ -20,37 +24,13 @@ public class SecurityAndPrivacy : IOptimizationCategory
     public ObservableCollection<IOptimization> Optimizations { get; init; } = [];
 
     [Optimization(
-        Id = "09F7CE38-93B2-4E1A-AB09-130268165B42",
-        Risk = OptimizationRisk.Risky,
-        Tags = OptimizationTags.System | OptimizationTags.Security
-    )]
-    public class DisableUAC : BaseOptimization
-    {
-        public override Task<ApplyResult> ApplyAsync(
-            IProgress<ProcessingProgress> progress,
-            OptimizationContext context
-        )
-        {
-            RegistryService.Write(
-                new RegistryItem(
-                    @"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System",
-                    "EnableLUA",
-                    0
-                )
-            );
-            context.Logger.LogInformation("Disabled UAC prompts");
-            return Task.FromResult(ApplyResult.True());
-        }
-    }
-
-    [Optimization(
         Id = "74DC8DAC-1F90-4BBD-ACF7-7E626749D71C",
         Risk = OptimizationRisk.Moderate,
-        Tags = OptimizationTags.Security | OptimizationTags.Privacy
+        Tags = OptimizationTags.Security | OptimizationTags.Privacy | OptimizationTags.System
     )]
     public class DisableTelemetry : BaseOptimization
     {
-        public override Task<ApplyResult> ApplyAsync(
+        public override async Task<ApplyResult> ApplyAsync(
             IProgress<ProcessingProgress> progress,
             OptimizationContext context
         )
@@ -66,6 +46,7 @@ public class SecurityAndPrivacy : IOptimizationCategory
             );
             // @formatter:off
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection",
                     "AllowTelemetry",
@@ -121,11 +102,22 @@ public class SecurityAndPrivacy : IOptimizationCategory
                     @"HKLM\SOFTWARE\Policies\Microsoft\Assistance\Client\1.0",
                     "NoActiveHelp",
                     1
+                ),
+                new RegistryItem(
+                    @"HKCU\SOFTWARE\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy",
+                    "HasAccepted",
+                    0
+                ),
+                new RegistryItem(
+                    @"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced",
+                    "Start_TrackProgs",
+                    0
                 )
             );
-            RegistryService.DeleteValue([
-                new RegistryItem(@"HKCU\SOFTWARE\Microsoft\Siuf\Rules", "PeriodInNanoSeconds"),
-            ]);
+            RegistryService.DeleteValue(
+                context,
+                [new RegistryItem(@"HKCU\SOFTWARE\Microsoft\Siuf\Rules", "PeriodInNanoSeconds")]
+            );
             context.Logger.LogInformation("Reduced core telemetry and feedback");
             progress?.Report(
                 new ProcessingProgress
@@ -136,15 +128,17 @@ public class SecurityAndPrivacy : IOptimizationCategory
                     Total = 3,
                 }
             );
-            ServiceProcessService.ChangeServiceStartupType(
-                new ServiceItem("DiagTrack", ServiceStartupType.Disabled),
-                new ServiceItem("dmwappushservice", ServiceStartupType.Disabled),
-                new ServiceItem("DcpSvc", ServiceStartupType.Disabled),
-                new ServiceItem(
-                    "diagnosticshub.standardcollector.service",
-                    ServiceStartupType.Disabled
-                ),
-                new ServiceItem("DusmSvc", ServiceStartupType.Disabled)
+            await ServiceProcessService.ChangeServiceStartupTypeAsync(
+                context,
+                [
+                    new ServiceItem("DiagTrack", ServiceStartupType.Disabled),
+                    new ServiceItem("dmwappushservice", ServiceStartupType.Disabled),
+                    new ServiceItem("DcpSvc", ServiceStartupType.Disabled),
+                    new ServiceItem(
+                        "diagnosticshub.standardcollector.service",
+                        ServiceStartupType.Disabled
+                    ),
+                ]
             );
 
             progress?.Report(
@@ -171,35 +165,30 @@ public class SecurityAndPrivacy : IOptimizationCategory
             // @formatter:on
 
             foreach (var task in tasksToDelete)
-                try
-                {
-                    if (!ScheduledTaskService.IsTaskEnabled(task))
-                        continue;
-                    ScheduledTaskService.DisableTask(task);
-                    context.Logger.LogInformation("Disabled task {Task}", task);
-                }
-                catch (Exception ex)
-                {
-                    context.Logger.LogWarning(ex, "Failed to disable task {Task}", task);
-                }
+            {
+                // The provider records what it found, so a task that is already disabled or
+                // absent still leaves a step: deciding here would drop it from the record.
+                ScheduledTaskService.DisableTask(context, task);
+            }
 
-            return Task.FromResult(ApplyResult.True());
+            return context.Changes.ToApplyResult();
         }
     }
 
     [Optimization(
         Id = "097B1C61-F372-4B9E-A1C9-D5E6F7A8B9C0",
-        Risk = OptimizationRisk.Safe,
+        Risk = OptimizationRisk.Moderate,
         Tags = OptimizationTags.System | OptimizationTags.Privacy
     )]
     public class DisableErrorReporting : BaseOptimization
     {
-        public override Task<ApplyResult> ApplyAsync(
+        public override async Task<ApplyResult> ApplyAsync(
             IProgress<ProcessingProgress> progress,
             OptimizationContext context
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting",
                     "Disabled",
@@ -212,9 +201,12 @@ public class SecurityAndPrivacy : IOptimizationCategory
                 )
             );
 
-            ServiceProcessService.ChangeServiceStartupType(
-                new ServiceItem("WerSvc", ServiceStartupType.Disabled),
-                new ServiceItem("PcaSvc", ServiceStartupType.Disabled)
+            await ServiceProcessService.ChangeServiceStartupTypeAsync(
+                context,
+                [
+                    new ServiceItem("WerSvc", ServiceStartupType.Disabled),
+                    new ServiceItem("PcaSvc", ServiceStartupType.Disabled),
+                ]
             );
 
             var tasksToDelete = new[]
@@ -226,28 +218,23 @@ public class SecurityAndPrivacy : IOptimizationCategory
             };
 
             foreach (var task in tasksToDelete)
-                try
-                {
-                    if (!ScheduledTaskService.IsTaskEnabled(task))
-                        continue;
-                    ScheduledTaskService.DisableTask(task);
-                }
-                catch (Exception ex)
-                {
-                    context.Logger.LogWarning(ex, "Failed to disable task {Task}", task);
-                }
+            {
+                // The provider records what it found, so a task that is already disabled or
+                // absent still leaves a step: deciding here would drop it from the record.
+                ScheduledTaskService.DisableTask(context, task);
+            }
 
             context.Logger.LogInformation(
                 "Disabled Windows Error Reporting and Compatibility Assistant"
             );
-            return Task.FromResult(ApplyResult.True());
+            return context.Changes.ToApplyResult();
         }
     }
 
     [Optimization(
         Id = "B1C2D3E4-F5A6-4B7C-8D9E-0F1A2B3C4D5E",
         Risk = OptimizationRisk.Safe,
-        Tags = OptimizationTags.Privacy
+        Tags = OptimizationTags.Privacy | OptimizationTags.System
     )]
     public class DisableAdvertisingAndSuggestions : BaseOptimization
     {
@@ -256,7 +243,9 @@ public class SecurityAndPrivacy : IOptimizationCategory
             OptimizationContext context
         )
         {
+            // @formatter:off
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo",
                     "Enabled",
@@ -293,16 +282,6 @@ public class SecurityAndPrivacy : IOptimizationCategory
                     1
                 ),
                 new RegistryItem(
-                    @"HKCU\Software\Microsoft\Windows\CurrentVersion\Feeds",
-                    "ShellFeedsTaskbarViewMode",
-                    2
-                ),
-                new RegistryItem(
-                    @"HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer",
-                    "HideSCAMeetNow",
-                    1
-                ),
-                new RegistryItem(
                     @"HKCU\Software\Microsoft\Windows\CurrentVersion\UserProfileEngagement",
                     "ScoobeSystemSettingEnabled",
                     0
@@ -326,30 +305,79 @@ public class SecurityAndPrivacy : IOptimizationCategory
                     @"HKCU\Control Panel\International\User Profile",
                     "HttpAcceptLanguageOptOut",
                     1
-                ),
+                )
+            );
+            // @formatter:on
+            context.Logger.LogInformation(
+                "Disabled advertising ID, consumer features and system suggestions"
+            );
+
+            return Task.FromResult(context.Changes.ToApplyResult());
+        }
+    }
+
+    [Optimization(
+        Id = "26F3AE39-4EAA-45D4-9375-B244159D5EB3",
+        Risk = OptimizationRisk.Safe,
+        Tags = OptimizationTags.Privacy | OptimizationTags.System
+    )]
+    public class DisableNewsAndInterests : BaseOptimization
+    {
+        public override Task<ApplyResult> ApplyAsync(
+            IProgress<ProcessingProgress> progress,
+            OptimizationContext context
+        )
+        {
+            RegistryService.Write(
+                context,
                 new RegistryItem(
-                    @"HKCU\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy",
-                    "01",
+                    @"HKLM\SOFTWARE\Policies\Microsoft\Dsh",
+                    "AllowNewsAndInterests",
                     0
                 ),
                 new RegistryItem(
-                    @"HKCU\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy",
-                    "02",
+                    @"HKCU\Software\Microsoft\Windows\CurrentVersion\Feeds",
+                    "ShellFeedsTaskbarViewMode",
                     0
                 )
             );
 
-            context.Logger.LogInformation(
-                "Disabled advertising ID, consumer features and system suggestions"
+            context.Logger.LogInformation("Disabled News and Interests feed");
+            return Task.FromResult(context.Changes.ToApplyResult());
+        }
+    }
+
+    [Optimization(
+        Id = "6D217B90-0957-4861-B3F5-58ECF3E236EE",
+        Risk = OptimizationRisk.Safe,
+        Tags = OptimizationTags.Privacy | OptimizationTags.Windows10Only | OptimizationTags.System,
+        Condition = typeof(Windows10Condition)
+    )]
+    public class HideMeetNowButton : BaseOptimization
+    {
+        public override Task<ApplyResult> ApplyAsync(
+            IProgress<ProcessingProgress> progress,
+            OptimizationContext context
+        )
+        {
+            RegistryService.Write(
+                context,
+                new RegistryItem(
+                    @"HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer",
+                    "HideSCAMeetNow",
+                    1
+                )
             );
-            return Task.FromResult(ApplyResult.True());
+
+            context.Logger.LogInformation("Hidden Meet Now button from the taskbar");
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 
     [Optimization(
         Id = "A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D",
         Risk = OptimizationRisk.Safe,
-        Tags = OptimizationTags.Privacy
+        Tags = OptimizationTags.Privacy | OptimizationTags.System
     )]
     public class DisableActivityHistory : BaseOptimization
     {
@@ -359,6 +387,7 @@ public class SecurityAndPrivacy : IOptimizationCategory
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKLM\SOFTWARE\Policies\Microsoft\Windows\System",
                     "PublishUserActivities",
@@ -382,14 +411,14 @@ public class SecurityAndPrivacy : IOptimizationCategory
             );
 
             context.Logger.LogInformation("Disabled activity history collection and syncing");
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 
     [Optimization(
         Id = "C1D2E3F4-A5B6-4C7D-8E9F-0A1B2C3D4E5F",
         Risk = OptimizationRisk.Safe,
-        Tags = OptimizationTags.Privacy
+        Tags = OptimizationTags.Privacy | OptimizationTags.System
     )]
     public class DisableLocationAndSensors : BaseOptimization
     {
@@ -399,6 +428,7 @@ public class SecurityAndPrivacy : IOptimizationCategory
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKLM\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors",
                     "DisableLocation",
@@ -447,27 +477,22 @@ public class SecurityAndPrivacy : IOptimizationCategory
                 )
             );
 
-            try
-            {
-                if (ScheduledTaskService.IsTaskEnabled(@"\Microsoft\Windows\Maps\MapsUpdateTask"))
-                    ScheduledTaskService.DisableTask(@"\Microsoft\Windows\Maps\MapsUpdateTask");
-            }
-            catch (Exception ex)
-            {
-                context.Logger.LogWarning(ex, "Failed to disable maps update task");
-            }
+            const string mapsTask = @"\Microsoft\Windows\Maps\MapsUpdateTask";
+            var mapsState = ScheduledTaskService.GetTaskEnabledState(mapsTask, context.Logger);
+            if (mapsState is not (TaskEnabledState.Disabled or TaskEnabledState.NotFound))
+                ScheduledTaskService.DisableTask(context, mapsTask);
 
             context.Logger.LogInformation(
                 "Disabled location tracking, sensors and offline maps updates"
             );
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 
     [Optimization(
         Id = "4107430C-0074-4380-90E7-3662572E4720",
         Risk = OptimizationRisk.Moderate,
-        Tags = OptimizationTags.Privacy
+        Tags = OptimizationTags.Privacy | OptimizationTags.System | OptimizationTags.Performance
     )]
     public class DisableAutoLogger : BaseOptimization
     {
@@ -477,6 +502,7 @@ public class SecurityAndPrivacy : IOptimizationCategory
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\AppModel",
                     "Start",
@@ -494,16 +520,6 @@ public class SecurityAndPrivacy : IOptimizationCategory
                 ),
                 new RegistryItem(
                     @"HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\DataMarket",
-                    "Start",
-                    0
-                ),
-                new RegistryItem(
-                    @"HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\DefenderApiLogger",
-                    "Start",
-                    0
-                ),
-                new RegistryItem(
-                    @"HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\DefenderAuditLogger",
                     "Start",
                     0
                 ),
@@ -539,14 +555,15 @@ public class SecurityAndPrivacy : IOptimizationCategory
                 )
             );
             context.Logger.LogInformation("Disabled WMI AutoLogger sessions");
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 
     [Optimization(
         Id = "6856782A-B530-4623-BD89-942D73FB82FD",
         Risk = OptimizationRisk.Moderate,
-        Tags = OptimizationTags.Privacy | OptimizationTags.System
+        Tags = OptimizationTags.Privacy | OptimizationTags.System | OptimizationTags.Windows10Only,
+        Condition = typeof(Windows10Condition)
     )]
     public class DisableCortana : BaseOptimization
     {
@@ -556,6 +573,7 @@ public class SecurityAndPrivacy : IOptimizationCategory
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search",
                     "AllowCortana",
@@ -582,11 +600,6 @@ public class SecurityAndPrivacy : IOptimizationCategory
                     0
                 ),
                 new RegistryItem(
-                    @"HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search",
-                    "DisableWebSearch",
-                    1
-                ),
-                new RegistryItem(
                     @"HKCU\Software\Microsoft\Windows\CurrentVersion\Search",
                     "CortanaConsent",
                     0
@@ -598,14 +611,18 @@ public class SecurityAndPrivacy : IOptimizationCategory
                 )
             );
             context.Logger.LogInformation("Disabled Cortana and web search");
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 
     [Optimization(
         Id = "64C6BEC3-B58C-4E57-830A-1DE1F4650542",
         Risk = OptimizationRisk.Moderate,
-        Tags = OptimizationTags.Privacy | OptimizationTags.System
+        Tags = OptimizationTags.Privacy
+            | OptimizationTags.System
+            | OptimizationTags.Windows11Only
+            | OptimizationTags.Visual,
+        Condition = typeof(Windows11Condition)
     )]
     public class DisableCopilot : BaseOptimization
     {
@@ -615,6 +632,7 @@ public class SecurityAndPrivacy : IOptimizationCategory
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot",
                     "TurnOffWindowsCopilot",
@@ -631,41 +649,21 @@ public class SecurityAndPrivacy : IOptimizationCategory
                     0
                 ),
                 new RegistryItem(
-                    @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Shell\Copilot",
-                    "IsCopilotAvailable",
-                    0
-                ),
-                new RegistryItem(
-                    @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Shell\Copilot",
-                    "CopilotDisabledReason",
-                    "IsEnabledForGeographicRegionFailed"
-                ),
-                new RegistryItem(
-                    @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsCopilot",
-                    "AllowCopilotRuntime",
-                    0
-                ),
-                new RegistryItem(
                     @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked",
                     "{CB3B0003-8088-4EDE-8769-8B354AB2FF8C}",
                     ""
-                ),
-                new RegistryItem(
-                    @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Shell\Copilot\BingChat",
-                    "IsUserEligible",
-                    0
                 )
             );
 
             context.Logger.LogInformation("Disabled Windows Copilot");
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 
     [Optimization(
         Id = "00C997FE-1CB7-41BD-B473-65A81333AEE9",
         Risk = OptimizationRisk.Safe,
-        Tags = OptimizationTags.System | OptimizationTags.Latency | OptimizationTags.Privacy
+        Tags = OptimizationTags.System | OptimizationTags.Performance | OptimizationTags.Privacy
     )]
     public class DisableContentDeliveryManager : BaseOptimization
     {
@@ -675,6 +673,7 @@ public class SecurityAndPrivacy : IOptimizationCategory
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager",
                     "ContentDeliveryAllowed",
@@ -707,7 +706,57 @@ public class SecurityAndPrivacy : IOptimizationCategory
                 )
             );
             context.Logger.LogInformation("Disabled content delivery manager");
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
+        }
+    }
+
+    [Optimization(
+        Id = "A4823C34-0BDD-4418-83A0-4968102D1771",
+        Risk = OptimizationRisk.Safe,
+        Tags = OptimizationTags.Privacy | OptimizationTags.System
+    )]
+    public class DisableFindMyDevice : BaseOptimization
+    {
+        public override Task<ApplyResult> ApplyAsync(
+            IProgress<ProcessingProgress> progress,
+            OptimizationContext context
+        )
+        {
+            RegistryService.Write(
+                context,
+                new RegistryItem(
+                    @"HKLM\SOFTWARE\Policies\Microsoft\FindMyDevice",
+                    "AllowFindMyDevice",
+                    0
+                )
+            );
+            context.Logger.LogInformation("Disabled Find My Device location tracking");
+            return Task.FromResult(context.Changes.ToApplyResult());
+        }
+    }
+
+    [Optimization(
+        Id = "6F242AD6-4717-4161-A7BF-A2AF5F0C9BDD",
+        Risk = OptimizationRisk.Safe,
+        Tags = OptimizationTags.Network | OptimizationTags.Privacy
+    )]
+    public class DisableDeliveryOptimization : BaseOptimization
+    {
+        public override Task<ApplyResult> ApplyAsync(
+            IProgress<ProcessingProgress> progress,
+            OptimizationContext context
+        )
+        {
+            RegistryService.Write(
+                context,
+                new RegistryItem(
+                    @"HKLM\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization",
+                    "DODownloadMode",
+                    0
+                )
+            );
+            context.Logger.LogInformation("Disabled peer-to-peer Delivery Optimization sharing");
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 }

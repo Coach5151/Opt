@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -10,8 +12,11 @@ using optimizerDuck.Common.Helpers;
 using optimizerDuck.Domain.Configuration;
 using optimizerDuck.Domain.UI;
 using optimizerDuck.Resources.Languages;
-using optimizerDuck.Services;
-using optimizerDuck.Services.Managers;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.Optimization;
+using optimizerDuck.Services.Revert;
+using optimizerDuck.Services.System;
+using optimizerDuck.UI.Behaviors;
 using Wpf.Ui;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
@@ -30,7 +35,6 @@ public partial class SettingsViewModel(
 {
     [ObservableProperty]
     private ApplicationTheme _currentApplicationTheme = ApplicationTheme.Unknown;
-    private bool _isInitialized;
 
     [ObservableProperty]
     private bool _removeProvisioned;
@@ -43,22 +47,14 @@ public partial class SettingsViewModel(
 
     [ObservableProperty]
     private bool _showSnackbarNotificationAfterAppliedSuccessfully;
+
+    [ObservableProperty]
+    private bool _smoothScrolling;
     public string Version { get; } = Shared.FileVersion;
 
-    public ObservableCollection<LanguageOption> Languages { get; } =
-    [
-        new() { DisplayName = "English", Culture = new CultureInfo("en-US") },
-        new() { DisplayName = "Tiếng Việt", Culture = new CultureInfo("vi-VN") },
-        new() { DisplayName = "正體中文", Culture = new CultureInfo("zh-TW") },
-    ];
+    public ObservableCollection<LanguageOption> Languages { get; } = new(SupportedLanguages.All);
 
-    public override async Task OnNavigatedToAsync()
-    {
-        if (!_isInitialized)
-            await InitializeViewModel();
-    }
-
-    private Task InitializeViewModel()
+    protected override Task InitializeOnceAsync()
     {
         SelectedCultureName = appOptionsMonitor.CurrentValue.App.Language;
         ShellTimeoutMs = appOptionsMonitor.CurrentValue.Optimize.ShellTimeoutMs;
@@ -66,18 +62,19 @@ public partial class SettingsViewModel(
             .CurrentValue
             .Optimize
             .ShowCompletionNotification;
+        SmoothScrolling = appOptionsMonitor.CurrentValue.Optimize.SmoothScrolling;
+        SmoothScrollBehavior.GlobalEnabled = SmoothScrolling;
         RemoveProvisioned = appOptionsMonitor.CurrentValue.Bloatware.RemoveProvisioned;
         CurrentApplicationTheme = ApplicationThemeManager.GetAppTheme();
 
         ApplicationThemeManager.Changed += OnThemeChanged;
 
-        _isInitialized = true;
         return Task.CompletedTask;
     }
 
     private void OnThemeChanged(ApplicationTheme currentApplicationTheme, Color systemAccent)
     {
-        // Update the theme if it has been changed elsewhere than in the settings.
+        // The theme may have been changed outside the settings page.
         if (CurrentApplicationTheme != currentApplicationTheme)
             CurrentApplicationTheme = currentApplicationTheme;
     }
@@ -88,12 +85,12 @@ public partial class SettingsViewModel(
     {
         var dialog = new ContentDialog
         {
-            Title = Translations.Dialog_AreYouSure_Title,
+            Title = Loc.Instance["Dialog.AreYouSure.Title"],
             Content = content,
-            PrimaryButtonText = Translations.Button_Clear,
+            PrimaryButtonText = Loc.Instance["Button.Clear"],
             PrimaryButtonAppearance = ControlAppearance.Danger,
 
-            CloseButtonText = Translations.Button_Cancel,
+            CloseButtonText = Loc.Instance["Button.Cancel"],
 
             DefaultButton = ContentDialogButton.Close,
             MaxWidth = 500,
@@ -141,8 +138,8 @@ public partial class SettingsViewModel(
         catch (Exception ex)
         {
             snackbarService.Show(
-                Translations.Snackbar_OpenFailed_Title,
-                Translations.Snackbar_OpenFailed_Message,
+                Loc.Instance["Snackbar.OpenFailed.Title"],
+                Loc.Instance["Snackbar.OpenFailed.Message"],
                 ControlAppearance.Danger,
                 new SymbolIcon { Symbol = SymbolRegular.ErrorCircle24, Filled = true },
                 TimeSpan.FromSeconds(5)
@@ -152,25 +149,24 @@ public partial class SettingsViewModel(
     }
 
     [RelayCommand]
-    private async Task ClearResources()
+    private async Task ClearDownloads()
     {
         var result = await ConfirmationDialogAsync(
-            Translations.Settings_ClearResources_Description
+            Loc.Instance["Settings.ClearDownloads.Description"]
         );
         if (result == ContentDialogResult.Primary)
-            OptimizationService.ClearResources(logger);
+            OptimizationService.ClearDownloads(logger);
     }
 
     [RelayCommand]
     private async Task ClearAllRevertData()
     {
         var result = await ConfirmationDialogAsync(
-            Translations.Settings_ClearRevertData_Description
+            Loc.Instance["Settings.ClearRevertData.Description"]
         );
         if (result == ContentDialogResult.Primary)
         {
             RevertManager.ClearAllRevertData(logger);
-            // Refresh optimizations
             await OptimizationService.UpdateOptimizationStateAsync(
                 optimizationRegistry.OptimizationCategories.SelectMany(c => c.Optimizations)
             );
@@ -185,7 +181,10 @@ public partial class SettingsViewModel(
             switch (type)
             {
                 case "Documentation":
-                    logger.LogInformation("Opening page: {Url}", Shared.WebsiteURL + "docs/guides/getting-started");
+                    logger.LogInformation(
+                        "Opening page: {Url}",
+                        Shared.WebsiteURL + "docs/guides/getting-started"
+                    );
                     Process.Start(
                         new ProcessStartInfo
                         {
@@ -232,32 +231,32 @@ public partial class SettingsViewModel(
         catch (Exception ex)
         {
             snackbarService.Show(
-                Translations.Snackbar_OpenLinkFailed_Title,
-                Translations.Snackbar_OpenLinkFailed_Message,
+                Loc.Instance["Snackbar.OpenLinkFailed.Title"],
+                Loc.Instance["Snackbar.OpenLinkFailed.Message"],
                 ControlAppearance.Danger,
                 new SymbolIcon { Symbol = SymbolRegular.ErrorCircle24, Filled = true },
                 TimeSpan.FromSeconds(5)
             );
-            logger.LogError(ex, "Failed to open page");
+            logger.LogWarning(ex, "Failed to open page");
         }
     }
 
     [RelayCommand]
     private async Task ToggleRemoveProvisioned()
     {
-        if (!_isInitialized)
+        if (!IsInitialized)
             return;
         try
         {
             await configManager.SetAsync(
-                "bloatware:removeProvisioned",
-                (!appOptionsMonitor.CurrentValue.Bloatware.RemoveProvisioned).ToString()
+                x => x.Bloatware.RemoveProvisioned,
+                !appOptionsMonitor.CurrentValue.Bloatware.RemoveProvisioned
             );
+            RemoveProvisioned = appOptionsMonitor.CurrentValue.Bloatware.RemoveProvisioned;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to toggle RemoveProvisioned setting");
-            // Revert UI property on failure
             RemoveProvisioned = appOptionsMonitor.CurrentValue.Bloatware.RemoveProvisioned;
         }
     }
@@ -265,23 +264,40 @@ public partial class SettingsViewModel(
     [RelayCommand]
     private async Task ToggleShowCompletionNotification()
     {
-        if (!_isInitialized)
+        if (!IsInitialized)
             return;
         try
         {
-            await configManager.SetAsync(
-                "optimize:showCompletionNotification",
-                (!appOptionsMonitor.CurrentValue.Optimize.ShowCompletionNotification).ToString()
-            );
+            var newValue = !appOptionsMonitor.CurrentValue.Optimize.ShowCompletionNotification;
+            await configManager.SetAsync(x => x.Optimize.ShowCompletionNotification, newValue);
+            ShowSnackbarNotificationAfterAppliedSuccessfully = newValue;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to toggle ShowCompletionNotification setting");
-            // Revert UI property on failure
             ShowSnackbarNotificationAfterAppliedSuccessfully = appOptionsMonitor
                 .CurrentValue
                 .Optimize
                 .ShowCompletionNotification;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ToggleSmoothScrolling()
+    {
+        if (!IsInitialized)
+            return;
+        try
+        {
+            var newValue = !appOptionsMonitor.CurrentValue.Optimize.SmoothScrolling;
+            await configManager.SetAsync(x => x.Optimize.SmoothScrolling, newValue);
+            SmoothScrolling = newValue;
+            SmoothScrollBehavior.GlobalEnabled = SmoothScrolling;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to toggle SmoothScrolling setting");
+            SmoothScrolling = appOptionsMonitor.CurrentValue.Optimize.SmoothScrolling;
         }
     }
 
@@ -305,8 +321,8 @@ public partial class SettingsViewModel(
         catch (Exception ex)
         {
             snackbarService.Show(
-                Translations.Snackbar_OpenLinkFailed_Title,
-                Translations.Snackbar_OpenLinkFailed_Message,
+                Loc.Instance["Snackbar.OpenLinkFailed.Title"],
+                Loc.Instance["Snackbar.OpenLinkFailed.Message"],
                 ControlAppearance.Danger,
                 new SymbolIcon { Symbol = SymbolRegular.ErrorCircle24, Filled = true },
                 TimeSpan.FromSeconds(5)
@@ -321,36 +337,37 @@ public partial class SettingsViewModel(
 
     partial void OnSelectedCultureNameChanged(string value)
     {
-        if (!_isInitialized)
+        if (!IsInitialized)
             return;
         if (string.IsNullOrEmpty(value))
             return;
 
         var oldValue = appOptionsMonitor.CurrentValue.App.Language;
-        _ = SaveConfigAsync(
+        _ = SafeFireAndForgetAsync(
             async () =>
             {
                 await configManager.SetAsync(x => x.App.Language, value);
             },
             async () =>
             {
-                SelectedCultureName = oldValue;
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                    SelectedCultureName = oldValue
+                );
             }
         );
 
         if (value == Loc.CurrentCulture.Name)
             return;
-        _ = contentDialogService
-            .ShowAlertAsync(
-                Translations.Settings_LanguageChanged_Title,
-                Translations.Settings_LanguageChanged_Description,
-                Translations.Button_Ok,
-                CancellationToken.None
-            )
-            .ContinueWith(
-                t => logger.LogError(t.Exception, "Failed to show language changed dialog"),
-                TaskContinuationOptions.OnlyOnFaulted
-            );
+
+        Mouse.OverrideCursor = Cursors.Wait;
+        try
+        {
+            Loc.Instance.ChangeCulture(new CultureInfo(value));
+        }
+        finally
+        {
+            Mouse.OverrideCursor = null;
+        }
     }
 
     partial void OnCurrentApplicationThemeChanged(
@@ -358,9 +375,13 @@ public partial class SettingsViewModel(
         ApplicationTheme newValue
     )
     {
-        if (!_isInitialized)
+        if (!IsInitialized)
             return;
+        // Theme first: ApplyAccentFor reads GetAppTheme() cache to pick
+        // AccentFillColorDefault (secondary for Dark, primary for Light).
         ApplicationThemeManager.Apply(newValue, updateAccent: false);
+        App.ApplyAccentFor(newValue);
+
         _ = SaveConfigAsync(
             async () =>
             {
@@ -375,7 +396,7 @@ public partial class SettingsViewModel(
 
     partial void OnShellTimeoutMsChanged(int value)
     {
-        if (!_isInitialized)
+        if (!IsInitialized)
             return;
         if (value <= 0)
             return;
@@ -394,4 +415,33 @@ public partial class SettingsViewModel(
     }
 
     #endregion Property Changed
+
+    /// <summary>
+    ///     Fires an async task without awaiting it, catching every exception it throws.
+    /// </summary>
+    private async Task SafeFireAndForgetAsync(
+        Func<Task> taskFactory,
+        Func<Task>? revertAction = null
+    )
+    {
+        try
+        {
+            await taskFactory();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred in a fire-and-forget operation");
+            if (revertAction != null)
+            {
+                try
+                {
+                    await revertAction();
+                }
+                catch (Exception revertEx)
+                {
+                    logger.LogError(revertEx, "Failed to revert after error");
+                }
+            }
+        }
+    }
 }

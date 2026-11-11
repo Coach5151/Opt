@@ -1,14 +1,17 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using optimizerDuck.Common.Extensions;
 using optimizerDuck.Common.Helpers;
 using optimizerDuck.Domain.Abstractions;
+using optimizerDuck.Domain.Execution;
 using optimizerDuck.Domain.Optimizations.Models;
 using optimizerDuck.Resources.Languages;
-using optimizerDuck.Services.Managers;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.History;
+using optimizerDuck.Services.Revert;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
 
@@ -18,9 +21,99 @@ public partial class OptimizationDetailsViewModel(
     IOptimization optimization,
     ISnackbarService snackbarService,
     ILogger logger
-) : ObservableObject
+) : LocalizedObject
 {
     public IOptimization Optimization { get; } = optimization;
+
+    /// <summary>
+    ///     Holds the item's last recorded run, read once when the dialog is constructed.
+    /// </summary>
+    private readonly ChangeRecord? _record = ChangeRecordStore.TryRead(optimization.Id);
+    private IReadOnlyList<ChangeRecordStepViewModel>? _steps;
+    private IReadOnlyList<RecordFieldViewModel>? _recordFacts;
+
+    /// <summary>
+    ///     Gets the steps of the recorded run, worded for the run they belong to so a revert
+    ///     reads as what it put back.
+    /// </summary>
+    public IReadOnlyList<ChangeRecordStepViewModel> Steps =>
+        _steps ??= [
+            .. (_record?.Steps ?? []).Select(step => new ChangeRecordStepViewModel(
+                step,
+                _record?.Operation ?? ChangeRecordOperation.Apply
+            )),
+        ];
+
+    /// <summary>Gets a value that indicates whether a record is available to show.</summary>
+    public bool HasRecord => Steps.Count > 0;
+
+    /// <summary>
+    ///     Gets a line naming the run the record describes and when it ran, so the dialog says up
+    ///     front whether the item was last applied or reverted.
+    /// </summary>
+    public string RecordHeadline =>
+        _record switch
+        {
+            { Operation: ChangeRecordOperation.Revert } => Loc.Instance[
+                "Optimizer.Details.Record.Revert",
+                _record.RevertedAt ?? _record.AppliedAt
+            ],
+            { } apply => Loc.Instance["Optimizer.Details.Record.Apply", apply.AppliedAt],
+            _ => string.Empty,
+        };
+
+    /// <summary>Gets a value that indicates whether the record describes a revert.</summary>
+    public bool RecordIsRevert => _record?.Operation == ChangeRecordOperation.Revert;
+
+    /// <summary>
+    ///     Gets the facts of the run itself: the build that wrote the record, the Windows version
+    ///     it ran on and how long it took. A record written by an earlier build carries none of
+    ///     these and shows no chip for them.
+    /// </summary>
+    public IReadOnlyList<RecordFieldViewModel> RecordFacts =>
+        _recordFacts ??= BuildRecordFacts(_record);
+
+    /// <summary>
+    ///     Gets a value that indicates whether the record carries any fact about the run itself.
+    /// </summary>
+    public bool HasRecordFacts => RecordFacts.Count > 0;
+
+    private static IReadOnlyList<RecordFieldViewModel> BuildRecordFacts(ChangeRecord? record)
+    {
+        if (record is null)
+            return [];
+
+        var facts = new List<RecordFieldViewModel>();
+
+        if (!string.IsNullOrEmpty(record.AppVersion))
+            facts.Add(
+                new RecordFieldViewModel(
+                    SymbolRegular.Info24,
+                    Loc.Instance["Optimizer.Details.Record.Version"],
+                    record.AppVersion
+                )
+            );
+
+        if (!string.IsNullOrEmpty(record.WindowsVersion))
+            facts.Add(
+                new RecordFieldViewModel(
+                    SymbolRegular.Desktop24,
+                    Loc.Instance["Optimizer.Details.Record.Windows"],
+                    record.WindowsVersion
+                )
+            );
+
+        if (record.ElapsedMs is { } elapsedMs)
+            facts.Add(
+                new RecordFieldViewModel(
+                    SymbolRegular.Timer24,
+                    Loc.Instance["Optimizer.Details.Record.Took"],
+                    ChangeRecordStepViewModel.DescribeDuration(elapsedMs)
+                )
+            );
+
+        return facts;
+    }
 
     [RelayCommand]
     private async Task OpenRevertFileAsync()
@@ -44,8 +137,8 @@ public partial class OptimizationDetailsViewModel(
         catch (Exception ex)
         {
             snackbarService.Show(
-                Translations.Snackbar_OpenFailed_Title,
-                Translations.Snackbar_OpenFailed_Message,
+                Loc.Instance["Snackbar.OpenFailed.Title"],
+                Loc.Instance["Snackbar.OpenFailed.Message"],
                 ControlAppearance.Danger,
                 new SymbolIcon { Symbol = SymbolRegular.ErrorCircle24, Filled = true },
                 TimeSpan.FromSeconds(5)
@@ -58,57 +151,53 @@ public partial class OptimizationDetailsViewModel(
         }
     }
 
+    /// <summary>Reveals the file the record of the last run was written to.</summary>
+    [RelayCommand]
+    private void OpenRecordFile()
+    {
+        var filePath = ChangeRecordStore.PathFor(Optimization.Id);
+        if (!File.Exists(filePath))
+            return;
+
+        try
+        {
+            Process.Start(
+                new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{filePath}\"",
+                    UseShellExecute = true,
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            snackbarService.Show(
+                Loc.Instance["Snackbar.OpenFailed.Title"],
+                Loc.Instance["Snackbar.OpenFailed.Message"],
+                ControlAppearance.Danger,
+                new SymbolIcon { Symbol = SymbolRegular.ErrorCircle24, Filled = true },
+                TimeSpan.FromSeconds(5)
+            );
+            logger.LogError(
+                ex,
+                "Failed to open the change record for optimization {Id}",
+                Optimization.Id
+            );
+        }
+    }
+
     [RelayCommand]
     private async Task ViewSourceOnGitHubAsync()
     {
         if (Optimization is not BaseOptimization baseOpt || baseOpt.OwnerType == null)
             return;
 
-        var fileName = baseOpt.OwnerType.Name;
-        var className = Optimization.OptimizationKey;
-        var relativePath = $"optimizerDuck/Core/Optimizers/{fileName}.cs";
-        var url = $"{Shared.GitHubRepoURL}/blob/master/{relativePath}";
-
-        // Fetch source from GitHub raw content to find the class line number
-        try
-        {
-            var rawUrl =
-                $"https://raw.githubusercontent.com/itsfatduck/optimizerDuck/master/{relativePath}";
-
-            using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-            var source = await httpClient.GetStringAsync(rawUrl);
-
-            var lines = source.Split('\n');
-            for (var i = 0; i < lines.Length; i++)
-                if (lines[i].Contains($"class {className}", StringComparison.OrdinalIgnoreCase))
-                {
-                    url += $"#L{i + 1}";
-                    break;
-                }
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(
-                ex,
-                "Could not fetch source to find line number for {Class}",
-                className
-            );
-        }
-
-        try
-        {
-            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to open GitHub URL: {Url}", url);
-            snackbarService.Show(
-                Translations.Snackbar_OpenLinkFailed_Title,
-                Translations.Snackbar_OpenLinkFailed_Message,
-                ControlAppearance.Danger,
-                new SymbolIcon { Symbol = SymbolRegular.ErrorCircle24, Filled = true },
-                TimeSpan.FromSeconds(5)
-            );
-        }
+        await GitHubSourceHelper.OpenSourceOnGitHubAsync(
+            baseOpt.OwnerType,
+            Optimization.OptimizationKey,
+            logger: logger,
+            snackbarService: snackbarService
+        );
     }
 }

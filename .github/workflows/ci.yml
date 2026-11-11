@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
           cache: true
@@ -32,4 +32,9 @@ jobs:
         run: dotnet build optimizerDuck.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test optimizerDuck.Test/optimizerDuck.Test.csproj --configuration Release --no-build
+        run: dotnet run --project optimizerDuck.Test/optimizerDuck.Test.csproj --configuration Release --no-build -- -longRunning 30
+
+      - name: Format check
+        run: |
+          dotnet tool install --global csharpier --version 1.3.0
+          csharpier check .

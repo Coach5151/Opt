@@ -1,11 +1,12 @@
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using optimizerDuck.Common.Extensions;
 using optimizerDuck.Common.Helpers;
 
 namespace optimizerDuck.UI.ViewModels.Windows;
 
-public partial class MainWindowViewModel : ObservableObject
+public partial class MainWindowViewModel : LocalizedObject
 {
     /// <summary>
     ///     Gets the application version displayed in the title bar.
@@ -26,7 +27,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
         catch
         {
-            // Silently fail - link opening is a non-critical action
+            // Silently fail: opening a link is non-critical.
         }
     }
 
@@ -44,7 +45,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
         catch
         {
-            // Silently fail - link opening is a non-critical action
+            // Silently fail: opening a link is non-critical.
         }
     }
 }

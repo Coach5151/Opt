@@ -1,9 +1,13 @@
-﻿using Microsoft.Win32;
+using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 using optimizerDuck.Domain.Abstractions;
+using optimizerDuck.Domain.Exceptions;
+using optimizerDuck.Domain.Execution;
 using optimizerDuck.Domain.Optimizations.Models.Services;
 using optimizerDuck.Resources.Languages;
-using optimizerDuck.Services.OptimizationServices;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.System.Primitives;
 
 namespace optimizerDuck.Domain.Revert.Steps;
 
@@ -13,37 +17,41 @@ namespace optimizerDuck.Domain.Revert.Steps;
 public class RegistryRevertStep : IRevertStep
 {
     /// <summary>
-    ///     The action to perform (restore previous value or delete).
+    ///     Gets the action to perform (e.g., restore previous value, delete value,
+    ///     restore key tree).
     /// </summary>
     public RevertAction Action { get; init; }
 
     /// <summary>
-    ///     The registry key path.
+    ///     Gets the registry key path, for example
+    ///     <c>HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer</c>.
     /// </summary>
     public string Path { get; init; } = string.Empty;
 
     /// <summary>
-    ///     The registry value name, or <c>null</c> for the default value.
+    ///     Gets the registry value name, or <see langword="null" /> for the default value.
     /// </summary>
     public string? Name { get; init; }
 
     /// <summary>
-    ///     List of subkeys that were created during the apply operation (in order of creation, deepest first for cleanup)
+    ///     Gets the list of subkeys that were created during the apply operation.
+    ///     Ordered deepest first for correct cleanup order.
     /// </summary>
     public IReadOnlyList<string>? CreatedSubKeys { get; init; }
 
     /// <summary>
-    ///     Nested sub-steps to perform a complex action like restoring a full registry tree.
+    ///     Gets nested sub-steps to perform a complex action like restoring a full registry tree.
     /// </summary>
     public IReadOnlyList<RegistryRevertStep>? SubSteps { get; init; }
 
     /// <summary>
-    ///     The original registry value to restore.
+    ///     Gets the original registry value to restore, or <see langword="null" /> if
+    ///     the value did not exist.
     /// </summary>
     public object? Value { get; init; }
 
     /// <summary>
-    ///     The registry value kind (DWord, String, etc.).
+    ///     Gets the registry value kind (DWord, QWord, String, Binary, MultiString, ExpandString).
     /// </summary>
     public RegistryValueKind Kind { get; init; }
 
@@ -54,61 +62,65 @@ public class RegistryRevertStep : IRevertStep
     public string Description =>
         Action switch
         {
-            RevertAction.RestorePrevious => string.Format(
-                Translations.Revert_Registry_Description_Restore,
+            RevertAction.RestorePrevious => Loc.Instance[
+                "Revert.Registry.Description.Restore",
                 Path,
                 Name ?? "(Default)"
-            ),
-            RevertAction.NoPreviousValue => string.Format(
-                Translations.Revert_Registry_Description_Delete,
+            ],
+            RevertAction.NoPreviousValue => Loc.Instance[
+                "Revert.Registry.Description.Delete",
                 Path,
                 Name ?? "(Default)"
-            ),
-            RevertAction.RestoreKey => string.Format(
-                Translations.Revert_Registry_Description_RestoreKey,
+            ],
+            RevertAction.RestoreKey => Loc.Instance["Revert.Registry.Description.RestoreKey", Path],
+            RevertAction.DeleteKey => Loc.Instance["Revert.Registry.Description.DeleteKey", Path],
+            RevertAction.RestoreKeyTree => Loc.Instance[
+                "Revert.Registry.Description.RestoreKey",
                 Path
-            ),
-            RevertAction.DeleteKey => string.Format(
-                Translations.Revert_Registry_Description_DeleteKey,
-                Path
-            ),
-            RevertAction.RestoreKeyTree => string.Format(
-                Translations.Revert_Registry_Description_RestoreKey,
-                Path
-            ),
-            _ => $"Revert {Path}",
+            ],
+            _ => Loc.Instance["Revert.Registry.Description.RevertUnknown", Path],
         };
 
     /// <inheritdoc />
-    public Task<bool> ExecuteAsync()
+    public async Task<bool> ExecuteAsync(RevertContext context, ILogger logger)
     {
-        var result = Action switch
+        var opCall = new OpCall { Logger = logger };
+        OpResult result = Action switch
         {
             RevertAction.NoPreviousValue => RegistryService.DeleteValue(
+                opCall,
                 new RegistryItem(Path, Name!)
             ),
 
             RevertAction.RestorePrevious => Value == null
-                ? RegistryService.DeleteValue(new RegistryItem(Path, Name!))
-                : RegistryService.Write(new RegistryItem(Path, Name!, Value, Kind)),
+                ? RegistryService.DeleteValue(opCall, new RegistryItem(Path, Name!))
+                : RegistryService.Write(opCall, new RegistryItem(Path, Name!, Value, Kind)),
 
-            RevertAction.RestoreKey => RegistryService.CreateSubKey(new RegistryItem(Path)),
+            RevertAction.RestoreKey => RegistryService.CreateSubKey(opCall, new RegistryItem(Path)),
 
-            RevertAction.DeleteKey => RegistryService.DeleteSubKeyTree(new RegistryItem(Path)),
+            RevertAction.DeleteKey => RegistryService.DeleteSubKeyTree(
+                opCall,
+                new RegistryItem(Path)
+            ),
 
-            RevertAction.RestoreKeyTree => ExecuteSubSteps(),
+            RevertAction.RestoreKeyTree => await ExecuteSubStepsAsync(context, logger)
+                .ConfigureAwait(false)
+                ? OpResult.Success()
+                : OpResult.Fail(Description),
 
-            _ => false,
+            _ => OpResult.Fail(Description),
         };
 
-        if (!result)
-            throw new Exception(string.Format(Translations.Service_Common_Error_AccessDenied)); // Generic for now, but better than nothing
+        if (!result.Ok)
+            throw new StepExecutionException(result.Error ?? Description, result.ErrorDetail);
 
-        // Cleanup empty subkeys if they were created during apply
-        if (result && CreatedSubKeys?.Count > 0)
-            RegistryService.CleanupEmptyKeys(CreatedSubKeys);
+        // Read-back verify for the local value actions.
+        VerifyRestore(opCall);
 
-        return Task.FromResult(result);
+        if (CreatedSubKeys?.Count > 0)
+            RegistryService.CleanupEmptyKeys(CreatedSubKeys, opCall.Logger);
+
+        return true;
     }
 
     /// <inheritdoc />
@@ -122,7 +134,6 @@ public class RegistryRevertStep : IRevertStep
             [nameof(Kind)] = Kind.ToString(),
         };
 
-        // Save created subkeys list
         if (CreatedSubKeys?.Count > 0)
             obj[nameof(CreatedSubKeys)] = new JArray(CreatedSubKeys);
 
@@ -134,7 +145,8 @@ public class RegistryRevertStep : IRevertStep
             obj[nameof(SubSteps)] = subArray;
         }
 
-        // Serialize Value based on Kind to ensure deterministic JSON and avoid JValue rendering issues
+        // Serialize Value based on Kind to ensure deterministic JSON and avoid
+        // JValue rendering issues
         if (Value == null)
         {
             obj[nameof(Value)] = null;
@@ -212,7 +224,6 @@ public class RegistryRevertStep : IRevertStep
                     break;
             }
 
-        // Load created subkeys list
         List<string>? createdSubKeys = null;
         if (data[nameof(CreatedSubKeys)] is JArray subKeysArray)
             createdSubKeys = subKeysArray.ToObject<List<string>>();
@@ -238,14 +249,98 @@ public class RegistryRevertStep : IRevertStep
         };
     }
 
-    private bool ExecuteSubSteps()
+    private void VerifyRestore(OpCall call)
+    {
+        switch (Action)
+        {
+            case RevertAction.RestorePrevious when Value != null:
+            {
+                var item = new RegistryItem(Path, Name!);
+                if (!RegistryService.TryReadValue(item, out var actual, call.Logger))
+                    throw new StepExecutionException(
+                        $"Registry verify failed at {Path}:{Name}: could not read the value.",
+                        null
+                    );
+                if (!ValuesEqual(actual, Value, Kind))
+                    throw new StepExecutionException(
+                        $"Registry verify failed at {Path}:{Name}: expected '{Value}', actual '{actual}'",
+                        null
+                    );
+                break;
+            }
+            case RevertAction.NoPreviousValue:
+            case RevertAction.RestorePrevious:
+            {
+                // a failed read is not "absent".
+                if (
+                    !RegistryService.TryReadValue(
+                        new RegistryItem(Path, Name!),
+                        out var actual,
+                        call.Logger
+                    )
+                )
+                    throw new StepExecutionException(
+                        $"Registry verify failed at {Path}:{Name}: could not read the value.",
+                        null
+                    );
+                if (actual != null)
+                    throw new StepExecutionException(
+                        $"Registry verify failed at {Path}:{Name}: expected '<absent>', actual '{actual}'",
+                        null
+                    );
+                break;
+            }
+            case RevertAction.RestoreKey:
+                if (
+                    !RegistryService.TryKeyExists(
+                        new RegistryItem(Path),
+                        out var restoreExists,
+                        call.Logger
+                    )
+                )
+                    throw new StepExecutionException(
+                        $"Registry verify failed at {Path}: could not query the key.",
+                        null
+                    );
+                if (!restoreExists)
+                    throw new StepExecutionException(
+                        $"Registry verify failed at {Path}: expected key to exist, but it was missing",
+                        null
+                    );
+                break;
+            case RevertAction.DeleteKey:
+                if (
+                    !RegistryService.TryKeyExists(
+                        new RegistryItem(Path),
+                        out var deleteExists,
+                        call.Logger
+                    )
+                )
+                    throw new StepExecutionException(
+                        $"Registry verify failed at {Path}: could not query the key.",
+                        null
+                    );
+                if (deleteExists)
+                    throw new StepExecutionException(
+                        $"Registry verify failed at {Path}: expected key to be absent, but it still exists",
+                        null
+                    );
+                break;
+            default:
+                break;
+        }
+    }
+
+    private static bool ValuesEqual(object? actual, object? expected, RegistryValueKind kind) =>
+        RegistryValues.Equal(actual, expected, kind);
+
+    private async Task<bool> ExecuteSubStepsAsync(RevertContext context, ILogger logger)
     {
         if (SubSteps == null)
             return true;
         foreach (var step in SubSteps)
         {
-            // Run synchronously to ensure correct nested tree creation order
-            if (!step.ExecuteAsync().GetAwaiter().GetResult())
+            if (!await step.ExecuteAsync(context, logger))
                 return false;
         }
         return true;
@@ -269,6 +364,9 @@ public enum RevertAction
     /// <summary>The key existed before; recreate it during revert (limited to root).</summary>
     RestoreKey,
 
-    /// <summary>The key tree existed before; recreate the entire tree including values sequentially.</summary>
+    /// <summary>
+    ///     The key tree existed before; recreate the entire tree including values
+    ///     sequentially.
+    /// </summary>
     RestoreKeyTree,
 }

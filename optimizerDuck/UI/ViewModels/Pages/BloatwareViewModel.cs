@@ -1,16 +1,21 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using optimizerDuck.Common.Helpers;
 using optimizerDuck.Domain.Optimizations.Models.Bloatware;
 using optimizerDuck.Domain.UI;
 using optimizerDuck.Resources.Languages;
-using optimizerDuck.Services;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.System;
+using optimizerDuck.Services.UI;
 using optimizerDuck.UI.Dialogs;
 using optimizerDuck.UI.ViewModels.Dialogs;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
+using Wpf.Ui.Extensions;
 using AppXPackage = optimizerDuck.Domain.Optimizations.Models.Bloatware.AppXPackage;
 
 namespace optimizerDuck.UI.ViewModels.Pages;
@@ -22,9 +27,7 @@ public partial class BloatwareViewModel : ViewModel
     private readonly BloatwareService _bloatwareService;
     private readonly IContentDialogService _contentDialogService;
     private readonly ILogger<BloatwareViewModel> _logger;
-    private bool _isInitialized;
 
-    // Search, Filter, Sort
     [ObservableProperty]
     private string _searchText = string.Empty;
 
@@ -64,17 +67,40 @@ public partial class BloatwareViewModel : ViewModel
 
     public ObservableCollection<AppXPackage> AppxPackages { get; } = [];
 
-    public bool HasSelectedItems => AppxPackages.Any(x => x.IsSelected);
-    public int SelectedCount => AppxPackages.Count(x => x.IsSelected);
+    private int _selectedCount;
+
+    public bool HasSelectedItems => _selectedCount > 0;
+    public int SelectedCount => _selectedCount;
     public bool HasData => _allPackages.Count > 0;
     public bool HasSafePackages => AppxPackages.Any(x => x.Risk == AppRisk.Safe);
 
     public bool IsAllSafeSelected =>
         HasSafePackages && AppxPackages.Where(x => x.Risk == AppRisk.Safe).All(x => x.IsSelected);
 
-    partial void OnSearchTextChanged(string value)
+    private CancellationTokenSource? _searchCts;
+
+    partial void OnSearchTextChanged(string value) => ScheduleApplyFilter();
+
+    private void ScheduleApplyFilter()
     {
-        ApplyFilter();
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+        _searchCts = new CancellationTokenSource();
+        var token = _searchCts.Token;
+
+        _ = Task.Run(
+            async () =>
+            {
+                try
+                {
+                    await Task.Delay(250, token).ConfigureAwait(false);
+                    if (!token.IsCancellationRequested)
+                        await UiThread.InvokeAsync(ApplyFilter, DispatcherPriority.Background);
+                }
+                catch (OperationCanceledException) { }
+            },
+            token
+        );
     }
 
     partial void OnSelectedRiskFilterIndexChanged(int value)
@@ -87,25 +113,34 @@ public partial class BloatwareViewModel : ViewModel
         ApplyFilter();
     }
 
+    /// <inheritdoc />
     public override async Task OnNavigatedToAsync()
     {
-        if (_isInitialized)
-            return;
+        await base.OnNavigatedToAsync();
 
-        _isInitialized = true;
+        if (CrossPageEventBus.HasPendingRefresh<BloatwareChanged>())
+            await Refresh();
+    }
 
+    protected override async Task InitializeOnceAsync()
+    {
         IsLoading = true;
-        var appxPackages = await _bloatwareService.GetAppXPackagesAsync();
-        _allPackages.AddRange(appxPackages);
-        ApplyFilter();
-        IsLoading = false;
+        try
+        {
+            var appxPackages = await _bloatwareService.GetAppXPackagesAsync();
+            _allPackages.AddRange(appxPackages);
+            ApplyFilter();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private void ApplyFilter()
     {
         var query = _allPackages.AsEnumerable();
 
-        // Search
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
             var search = SearchText.Trim();
@@ -116,7 +151,6 @@ public partial class BloatwareViewModel : ViewModel
             );
         }
 
-        // Filter by risk
         query = SelectedRiskFilterIndex switch
         {
             1 => query.Where(p => p.Risk == AppRisk.Safe),
@@ -124,7 +158,6 @@ public partial class BloatwareViewModel : ViewModel
             _ => query,
         };
 
-        // Sort
         query = SelectedSortByIndex switch
         {
             0 => query.OrderBy(p => p.Name),
@@ -141,6 +174,13 @@ public partial class BloatwareViewModel : ViewModel
         AppxPackages.Clear();
         foreach (var package in filtered)
             AppxPackages.Add(package);
+
+        _selectedCount = 0;
+        foreach (var p in filtered)
+        {
+            if (p.IsSelected)
+                _selectedCount++;
+        }
     }
 
     #region Property Changed
@@ -149,6 +189,9 @@ public partial class BloatwareViewModel : ViewModel
     {
         if (e.PropertyName == nameof(AppXPackage.IsSelected))
         {
+            if (sender is AppXPackage pkg)
+                _selectedCount += pkg.IsSelected ? 1 : -1;
+
             UpdateProperties();
             RemoveSelectedCommand.NotifyCanExecuteChanged();
         }
@@ -179,10 +222,10 @@ public partial class BloatwareViewModel : ViewModel
 
         var askForConfirmationDialog = new ContentDialog
         {
-            Title = string.Format(Translations.BloatwareDialog_Confirmation_Title, SelectedCount),
+            Title = Loc.Instance["BloatwareDialog.Confirmation.Title", SelectedCount],
             Content = new BloatwareConfirmationDialog { DataContext = confirmationViewModel },
-            PrimaryButtonText = Translations.Button_Ok,
-            CloseButtonText = Translations.Button_Cancel,
+            PrimaryButtonText = Loc.Instance["Button.Ok"],
+            CloseButtonText = Loc.Instance["Button.Cancel"],
         };
 
         var result = await _contentDialogService.ShowAsync(
@@ -192,13 +235,35 @@ public partial class BloatwareViewModel : ViewModel
         if (result != ContentDialogResult.Primary)
             return;
 
+        var unusualPackages = toRemove.Where(p => !BloatwareService.IsValidPackage(p)).ToList();
+        if (unusualPackages.Count > 0)
+        {
+            var warningViewModel = new BloatwareConfirmationDialogViewModel(unusualPackages);
+            var warningDialog = new ContentDialog
+            {
+                Title = Loc.Instance["BloatwareDialog.UnusualWarning.Title"],
+                Content = new BloatwareWarningDialog { DataContext = warningViewModel },
+                PrimaryButtonText = Loc.Instance["Button.Ok"],
+                CloseButtonText = Loc.Instance["Button.Cancel"],
+            };
+
+            var warningResult = await _contentDialogService.ShowAsync(
+                warningDialog,
+                CancellationToken.None
+            );
+            if (warningResult != ContentDialogResult.Primary)
+                return;
+        }
+
         var viewModel = new ProcessingViewModel();
         var dialog = new ContentDialog
         {
-            Title = string.Format(Translations.BloatwareDialog_Title, toRemove.Count),
+            Title = Loc.Instance["BloatwareDialog.Title", toRemove.Count],
             Content = new ProcessingDialog { DataContext = viewModel },
             IsFooterVisible = false,
         };
+
+        var failed = new List<string>();
 
         try
         {
@@ -215,19 +280,19 @@ public partial class BloatwareViewModel : ViewModel
                 viewModel.ProgressReporter.Report(
                     new ProcessingProgress
                     {
-                        Message = string.Format(
-                            Translations.BloatwareDialog_Removing,
+                        Message = Loc.Instance[
+                            "BloatwareDialog.Removing",
                             item.Name,
                             i + 1,
                             toRemove.Count
-                        ),
-                        IsIndeterminate = false,
+                        ],
                         Total = toRemove.Count,
                         Value = i,
                     }
                 );
-                await _bloatwareService.RemoveAppXPackage(item);
-                //await Task.Delay(500); // Simulate work
+                var removal = await _bloatwareService.RemoveAppXPackage(item);
+                if (!removal.Succeeded)
+                    failed.Add(item.Name ?? item.PackageFullName ?? string.Empty);
             }
         }
         finally
@@ -238,7 +303,24 @@ public partial class BloatwareViewModel : ViewModel
             );
             dialog.Hide();
             await Refresh();
+            CrossPageEventBus.NotifyDataChanged<BloatwareChanged>();
         }
+
+        // The refreshed list is what shows a package is still installed; this names it, because a
+        // package that came back looks like a quirk of Windows otherwise.
+        if (failed.Count > 0)
+            await _contentDialogService.ShowSimpleDialogAsync(
+                new SimpleContentDialogCreateOptions
+                {
+                    Title = Loc.Instance["Bloatware.Remove.Failed.Title"],
+                    Content = Loc.Instance[
+                        "Bloatware.Remove.Failed.Message",
+                        string.Join(", ", failed)
+                    ],
+                    CloseButtonText = Loc.Instance["Button.Ok"],
+                },
+                CancellationToken.None
+            );
     }
 
     private bool CanRemoveSelected()
@@ -254,10 +336,16 @@ public partial class BloatwareViewModel : ViewModel
         AppxPackages.Clear();
         UpdateProperties();
 
-        var appxPackages = await _bloatwareService.GetAppXPackagesAsync();
-        _allPackages.AddRange(appxPackages);
-        ApplyFilter();
-        IsLoading = false;
+        try
+        {
+            var appxPackages = await _bloatwareService.GetAppXPackagesAsync();
+            _allPackages.AddRange(appxPackages);
+            ApplyFilter();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     [RelayCommand]

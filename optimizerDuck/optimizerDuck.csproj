@@ -1,7 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net10.0-windows</TargetFramework>
+        <!-- CET shadow stacks are enabled by default for .NET 9+ apphosts/singlefilehosts,
+             but the CoreCLR requires QueueUserAPC2 (Windows 11 build 22000+ / Server 2022
+             only - it does not exist on Windows 10) whenever shadow stacks are active, so
+             every published build fails to start on Windows 10 with 0x80131506 ("Your
+             Windows doesn't fully support CET"). Disable CETCompat to keep the Windows 10
+             support the README promises. See #50. -->
+        <CETCompat>false</CETCompat>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -9,18 +16,17 @@
         <Authors>fatDuck</Authors>
         <ApplicationIcon>Logo.ico</ApplicationIcon>
         <Company>fatDuck</Company>
-        <FileVersion>2.11.3</FileVersion>
-        <Version>2.11.3</Version>
+        <FileVersion>2.29.0</FileVersion>
+        <Version>2.29.0</Version>
         <Product>optimizerDuck</Product>
         <Copyright>Copyright fatDuck 2026</Copyright>
         <AssemblyTitle>optimizerDuck</AssemblyTitle>
         <AssemblyDescription>Free, open-source Windows optimization tool for performance, privacy, and simplicity.</AssemblyDescription>
         <NeutralLanguage>en-US</NeutralLanguage>
         <ApplicationManifest>app.manifest</ApplicationManifest>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <PlatformTarget>x64</PlatformTarget>
+        <!-- The gate: a warning fails the build, and the promoted style rules run inside it. -->
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -42,17 +48,21 @@
 
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.7" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.7" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.13" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.13" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.13" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-        <PackageReference Include="Serilog" Version="4.3.1" />
+        <PackageReference Include="Serilog" Version="4.4.1-dependabot-02442" />
         <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
-        <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-        <PackageReference Include="System.Management.Automation" Version="7.6.1" />
+        <PackageReference Include="Serilog.Sinks.File" Version="8.0.0-nblumhardt-02322" />
+        <PackageReference Include="System.Management.Automation" Version="7.6.99-rebuild.99" />
         <PackageReference Include="TaskScheduler" Version="2.12.2" />
         <PackageReference Include="WPF-UI" Version="4.3.0" />
         <PackageReference Include="WPF-UI.DependencyInjection" Version="4.3.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="optimizerDuck.Test" />
     </ItemGroup>
 
     <ItemGroup>
@@ -60,6 +70,11 @@
             <Generator>ResXFileCodeGenerator</Generator>
             <LastGenOutput>Translations.Designer.cs</LastGenOutput>
         </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\Embedded\Icons\blank.ico" />
+        <EmbeddedResource Include="Resources\Embedded\PowerPlans\optimizerDuck.pow" />
     </ItemGroup>
 
     <ItemGroup>

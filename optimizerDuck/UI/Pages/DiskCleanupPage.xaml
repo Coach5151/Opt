@@ -1,31 +1,24 @@
-﻿<Page
+<Page
     x:Class="optimizerDuck.UI.Pages.DiskCleanupPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cleanup1="clr-namespace:optimizerDuck.Domain.Optimizations.Models.Cleanup"
-    xmlns:converters="clr-namespace:optimizerDuck.Common.Converters"
+    xmlns:controls="clr-namespace:optimizerDuck.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:ext="clr-namespace:optimizerDuck.Common.Extensions"
     xmlns:local="clr-namespace:optimizerDuck.UI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    x:Name="ThisPage"
     Title="DiskCleanupPage"
     d:DataContext="{d:DesignInstance local:DiskCleanupPage}"
     d:DesignHeight="1200"
     d:DesignWidth="800"
     ui:Design.Background="Black"
     ui:Design.Foreground="White"
-    ScrollViewer.CanContentScroll="False"
     Style="{StaticResource PageRootStyle}"
     mc:Ignorable="d">
     <Page.Resources>
-        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToVisibilityConverter
-            x:Key="InverseBooleanToVisibilityConverter"
-            False="Visible"
-            True="Collapsed" />
-        <converters:SizeToBrushConverter x:Key="SizeToBrushConverter" />
-
         <!--  Clickable Name Style  -->
         <Style
             x:Key="ClickableNameStyle"
@@ -49,7 +42,7 @@
         </Style>
     </Page.Resources>
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid VerticalAlignment="Stretch" RowDefinitions="Auto,*">
         <!--  Header  -->
         <StackPanel Style="{StaticResource PageHeaderStyle}">
             <ui:TextBlock Style="{StaticResource PageTitleStyle}" Text="{ext:Loc DiskCleanup.Header.Title}" />
@@ -57,25 +50,11 @@
         </StackPanel>
 
         <!--  Loading State  -->
-        <Border Grid.Row="1" Visibility="{Binding ViewModel.IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <ui:ProgressRing
-                    Width="48"
-                    Height="48"
-                    Margin="0,0,0,16"
-                    IsIndeterminate="True" />
-                <ui:TextBlock
-                    HorizontalAlignment="Center"
-                    FontTypography="BodyStrong"
-                    Text="{ext:Loc DiskCleanup.Loading}" />
-                <ui:TextBlock
-                    Margin="0,4,0,0"
-                    HorizontalAlignment="Center"
-                    FontTypography="Caption"
-                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="{ext:Loc DiskCleanup.Header.Description}" />
-            </StackPanel>
-        </Border>
+        <controls:LoadingStateOverlay
+            Grid.Row="1"
+            IsLoading="{Binding ViewModel.IsLoading}"
+            Subtitle="{ext:Loc DiskCleanup.Header.Description}"
+            Title="{ext:Loc DiskCleanup.Loading}" />
 
         <!--  Main Content  -->
         <Grid
@@ -103,10 +82,38 @@
                         Grid.Column="2"
                         VerticalAlignment="Center"
                         Orientation="Horizontal">
+                        <!--  Select All / Deselect All  -->
+                        <ui:Button Command="{Binding ViewModel.ToggleSelectAllCommand}" Cursor="Hand">
+                            <ui:Button.Style>
+                                <Style BasedOn="{StaticResource {x:Type ui:Button}}" TargetType="ui:Button">
+                                    <Setter Property="Appearance" Value="Success" />
+                                    <Setter Property="Content" Value="{ext:Loc DiskCleanup.Button.SelectAll}" />
+                                    <Setter Property="Icon">
+                                        <Setter.Value>
+                                            <ui:SymbolIcon FontSize="16" Symbol="Checkmark24" />
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ViewModel.IsAllSelected}" Value="True">
+                                            <Setter Property="Appearance" Value="Danger" />
+                                            <Setter Property="Content" Value="{ext:Loc DiskCleanup.Button.DeselectAll}" />
+                                            <Setter Property="Icon">
+                                                <Setter.Value>
+                                                    <ui:SymbolIcon FontSize="16" Symbol="CheckboxUnchecked24" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:Button.Style>
+                        </ui:Button>
+
+                        <Separator Margin="4,0,4,0" />
+
                         <!--  Sort Dropdown  -->
                         <ComboBox
+                            Cursor="Hand"
                             SelectedIndex="{Binding ViewModel.SelectedSortByIndex}"
-                            Style="{StaticResource ComboBoxStyle}"
                             ToolTip="{ext:Loc Common.SortBy}">
                             <ComboBoxItem HorizontalContentAlignment="Left">
                                 <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
@@ -132,6 +139,7 @@
                         <ui:Button
                             Appearance="Danger"
                             Command="{Binding ViewModel.CleanSelectedCommand}"
+                            Cursor="Hand"
                             IsEnabled="{Binding ViewModel.CanClean}">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon
@@ -150,6 +158,7 @@
                                 Appearance="Primary"
                                 Command="{Binding ViewModel.ScanCommand}"
                                 Content="{ext:Loc DiskCleanup.Button.Scan}"
+                                Cursor="Hand"
                                 Icon="{ui:SymbolIcon Search24,
                                                      FontSize=16}"
                                 Visibility="{Binding ViewModel.IsScanning, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
@@ -169,16 +178,10 @@
                 <ItemsControl.Template>
                     <ControlTemplate TargetType="ItemsControl">
                         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-                            <ItemsPresenter Margin="0,0,12,0" />
+                            <ItemsPresenter />
                         </ScrollViewer>
                     </ControlTemplate>
                 </ItemsControl.Template>
-
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type cleanup1:CleanupItem}">
@@ -196,7 +199,18 @@
                                     Grid.Column="0"
                                     Margin="0,0,12,0"
                                     VerticalAlignment="Center"
-                                    IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                    IsChecked="{Binding IsSelected, Mode=TwoWay}">
+                                    <CheckBox.Style>
+                                        <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="CheckBox">
+                                            <Setter Property="IsEnabled" Value="True" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SizeBytes}" Value="0">
+                                                    <Setter Property="IsEnabled" Value="False" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </CheckBox.Style>
+                                </CheckBox>
 
                                 <!--  Icon  -->
                                 <Border
@@ -206,11 +220,11 @@
                                     Margin="0,0,14,0"
                                     VerticalAlignment="Center"
                                     Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                                    CornerRadius="20">
+                                    CornerRadius="10">
                                     <ui:SymbolIcon
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        FontSize="20"
+                                        FontSize="30"
                                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                         Symbol="{Binding Icon}" />
                                 </Border>
@@ -254,7 +268,8 @@
                                         Foreground="{DynamicResource TextFillColorDisabledBrush}"
                                         Text="{Binding Path}"
                                         TextTrimming="CharacterEllipsis"
-                                        ToolTip="{Binding Path}" />
+                                        ToolTip="{Binding Path}"
+                                        Visibility="{Binding Path, Converter={StaticResource NotEmptyToVisibilityConverter}}" />
 
                                     <!--  Size Badge  -->
                                     <Border
@@ -323,23 +338,59 @@
                                     </Border>
                                 </StackPanel>
 
-                                <!--  Status Icons  -->
-                                <StackPanel
+                                <!--  Actions: SplitButton + Progress  -->
+                                <Grid
                                     Grid.Column="3"
                                     Margin="12,0,0,0"
                                     VerticalAlignment="Center">
+
+                                    <!--  Scanning indicator  -->
                                     <ui:ProgressRing
                                         Width="20"
                                         Height="20"
                                         IsIndeterminate="True"
                                         Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                                    <!--  Cleaning indicator  -->
                                     <ui:ProgressRing
                                         Width="20"
                                         Height="20"
-                                        Foreground="{DynamicResource SystemFillColorSuccessBrush}"
                                         IsIndeterminate="True"
                                         Visibility="{Binding IsCleaning, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                </StackPanel>
+
+                                    <ui:SplitButton
+                                        Command="{Binding DataContext.ViewModel.CleanItemCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        Cursor="Hand"
+                                        IsEnabled="{Binding IsScanned}"
+                                        Visibility="{Binding ShowActions, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon
+                                                Margin="0,0,4,0"
+                                                FontSize="20"
+                                                Symbol="Delete24" />
+                                            <TextBlock VerticalAlignment="Center" Text="{ext:Loc DiskCleanup.Button.Clean}" />
+                                        </StackPanel>
+
+                                        <ui:SplitButton.Flyout>
+                                            <ContextMenu>
+                                                <MenuItem
+                                                    Command="{Binding DataContext.ViewModel.RefreshItemCommand, Source={x:Reference ThisPage}}"
+                                                    CommandParameter="{Binding}"
+                                                    Cursor="Hand"
+                                                    Header="{ext:Loc StartupManager.Menu.Refresh}"
+                                                    Icon="{ui:SymbolIcon ArrowClockwise24}" />
+                                                <MenuItem
+                                                    Command="{Binding DataContext.ViewModel.OpenFolderCommand, Source={x:Reference ThisPage}}"
+                                                    CommandParameter="{Binding}"
+                                                    Cursor="Hand"
+                                                    Header="{ext:Loc Common.OpenFolder}"
+                                                    Icon="{ui:SymbolIcon OpenFolder24}"
+                                                    IsEnabled="{Binding CanOpenFolder}" />
+                                            </ContextMenu>
+                                        </ui:SplitButton.Flyout>
+                                    </ui:SplitButton>
+                                </Grid>
                             </Grid>
                         </Border>
                     </DataTemplate>

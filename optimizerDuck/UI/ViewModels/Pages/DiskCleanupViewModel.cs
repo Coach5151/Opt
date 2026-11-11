@@ -1,10 +1,13 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using optimizerDuck.Resources.Languages;
-using optimizerDuck.Services;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.UI;
+using optimizerDuck.UI.Dialogs;
+using optimizerDuck.UI.ViewModels.Dialogs;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
 using CleanupItem = optimizerDuck.Domain.Optimizations.Models.Cleanup.CleanupItem;
@@ -14,13 +17,12 @@ namespace optimizerDuck.UI.ViewModels.Pages;
 public partial class DiskCleanupViewModel(
     DiskCleanupService diskCleanupService,
     ISnackbarService snackbarService,
+    IContentDialogService contentDialogService,
     ILogger<DiskCleanupViewModel> logger
 ) : ViewModel
 {
     [ObservableProperty]
     private ObservableCollection<CleanupItem> _cleanupItems = [];
-
-    private bool _initialized;
 
     [ObservableProperty]
     private bool _isCleaning;
@@ -33,7 +35,6 @@ public partial class DiskCleanupViewModel(
 
     private List<CleanupItem> _originalOrder = [];
 
-    // Sort
     [ObservableProperty]
     private int _selectedSortByIndex; // 0=Size, 1=Name, 2=Path
 
@@ -50,18 +51,17 @@ public partial class DiskCleanupViewModel(
     public long TotalFileCount => CleanupItems.Sum(i => i.FileCount);
     public bool CanClean =>
         SelectedCount > 0 && TotalSelectedSizeBytes > 0 && !IsCleaning && !IsScanning;
+    public bool IsAllSelected =>
+        CleanupItems.Count > 0
+        && CleanupItems.All(i => !i.IsScanned || i.SizeBytes == 0 || i.IsSelected);
 
     partial void OnSelectedSortByIndexChanged(int value)
     {
         ApplySort();
     }
 
-    public override async Task OnNavigatedToAsync()
+    protected override async Task InitializeOnceAsync()
     {
-        if (_initialized)
-            return;
-        _initialized = true;
-
         IsLoading = true;
         try
         {
@@ -90,14 +90,20 @@ public partial class DiskCleanupViewModel(
             IsLoading = false;
             UpdateProperties();
         }
+    }
 
-        await ScanAsync();
+    /// <inheritdoc />
+    public override async Task OnNavigatedToAsync()
+    {
+        await base.OnNavigatedToAsync();
 
-        CleanupItems = new ObservableCollection<CleanupItem>(
-            CleanupItems.OrderByDescending(i => i.SizeBytes).ToArray()
-        );
+        if (!IsAllScanned && !IsScanning)
+        {
+            _ = ScanAsync();
+        }
 
-        // only select items with size > 0
+        ApplySort();
+
         foreach (var item in CleanupItems)
             if (item.SizeBytes == 0)
                 item.IsSelected = false;
@@ -128,9 +134,92 @@ public partial class DiskCleanupViewModel(
     }
 
     [RelayCommand]
+    private async Task CleanItemAsync(CleanupItem item)
+    {
+        if (item.SizeBytes <= 0)
+            return;
+
+        try
+        {
+            var sw = Stopwatch.StartNew();
+
+            var freedBytes = await diskCleanupService.CleanAsync(item);
+            sw.Stop();
+
+            snackbarService.Show(
+                Loc.Instance["DiskCleanup.Complete.Title"],
+                Loc.Instance[
+                    "DiskCleanup.Complete.Message",
+                    CleanupItem.FormatBytes(freedBytes),
+                    $"{sw.Elapsed.TotalSeconds:0.0}s"
+                ],
+                ControlAppearance.Success,
+                new SymbolIcon { Symbol = SymbolRegular.CheckmarkCircle24, Filled = true },
+                TimeSpan.FromSeconds(5)
+            );
+
+            item.IsSelected = false;
+
+            logger.LogInformation(
+                "Disk cleanup completed, freed {Size} in {Duration}",
+                CleanupItem.FormatBytes(freedBytes),
+                sw.Elapsed
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to clean item {ItemId}", item.Id);
+            snackbarService.Show(
+                Loc.Instance["DiskCleanup.Error.Title"],
+                Loc.Instance["DiskCleanup.Error.Message"],
+                ControlAppearance.Danger,
+                new SymbolIcon { Symbol = SymbolRegular.ErrorCircle24, Filled = true },
+                TimeSpan.FromSeconds(5)
+            );
+        }
+        finally
+        {
+            await diskCleanupService.ScanAllAsync(CleanupItems);
+
+            UpdateProperties();
+            ApplySort();
+        }
+    }
+
+    [RelayCommand]
     private async Task CleanSelectedAsync()
     {
         if (!CanClean)
+            return;
+
+        var selectedItems = CleanupItems.Where(i => i.IsSelected && i.SizeBytes > 0).ToList();
+        if (selectedItems.Count == 0)
+            return;
+
+        var summaryText = Loc.Instance[
+            "DiskCleanup.Dialog.Confirmation.Summary",
+            TotalSelectedSizeFormatted,
+            SelectedCount,
+            TotalSelectedFileCount
+        ];
+
+        var dialogViewModel = new DiskCleanupConfirmationDialogViewModel(
+            selectedItems,
+            summaryText
+        );
+        var dialog = new ContentDialog
+        {
+            Title = Loc.Instance["DiskCleanup.Dialog.Confirmation.Title", SelectedCount],
+            Content = new DiskCleanupConfirmationDialog { DataContext = dialogViewModel },
+            PrimaryButtonText = Loc.Instance[
+                "DiskCleanup.Button.CleanSelected",
+                TotalSelectedSizeFormatted
+            ],
+            CloseButtonText = Loc.Instance["Common.Cancel"],
+        };
+
+        var result = await contentDialogService.ShowAsync(dialog, CancellationToken.None);
+        if (result != ContentDialogResult.Primary)
             return;
 
         IsCleaning = true;
@@ -140,17 +229,16 @@ public partial class DiskCleanupViewModel(
             var freedBytes = await diskCleanupService.CleanSelectedAsync(CleanupItems);
             sw.Stop();
 
-            // Deselect all items after successful clean
             foreach (var item in CleanupItems)
                 item.IsSelected = false;
 
             snackbarService.Show(
-                Translations.DiskCleanup_Complete_Title,
-                string.Format(
-                    Translations.DiskCleanup_Complete_Message,
+                Loc.Instance["DiskCleanup.Complete.Title"],
+                Loc.Instance[
+                    "DiskCleanup.Complete.Message",
                     CleanupItem.FormatBytes(freedBytes),
                     $"{sw.Elapsed.TotalSeconds:0.0}s"
-                ),
+                ],
                 ControlAppearance.Success,
                 new SymbolIcon { Symbol = SymbolRegular.CheckmarkCircle24, Filled = true },
                 TimeSpan.FromSeconds(5)
@@ -166,8 +254,8 @@ public partial class DiskCleanupViewModel(
         {
             logger.LogError(ex, "Failed to clean selected items");
             snackbarService.Show(
-                Translations.DiskCleanup_Error_Title,
-                Translations.DiskCleanup_Error_Message,
+                Loc.Instance["DiskCleanup.Error.Title"],
+                Loc.Instance["DiskCleanup.Error.Message"],
                 ControlAppearance.Danger,
                 new SymbolIcon { Symbol = SymbolRegular.ErrorCircle24, Filled = true },
                 TimeSpan.FromSeconds(5)
@@ -178,7 +266,51 @@ public partial class DiskCleanupViewModel(
             IsCleaning = false;
             await diskCleanupService.ScanAllAsync(CleanupItems);
             UpdateProperties();
+            ApplySort();
         }
+    }
+
+    [RelayCommand]
+    private async Task RefreshItemAsync(CleanupItem item)
+    {
+        if (item is null)
+            return;
+
+        await diskCleanupService.ScanAsync(item);
+
+        if (item.SizeBytes == 0)
+            item.IsSelected = false;
+
+        UpdateProperties();
+        ApplySort();
+    }
+
+    [RelayCommand]
+    private void ToggleSelectAll()
+    {
+        if (IsAllSelected)
+            DeselectAll();
+        else
+            SelectAll();
+    }
+
+    [RelayCommand]
+    private void SelectAll()
+    {
+        foreach (var item in CleanupItems)
+            if (item.IsScanned && item.SizeBytes > 0)
+                item.IsSelected = true;
+
+        UpdateProperties();
+    }
+
+    [RelayCommand]
+    private void DeselectAll()
+    {
+        foreach (var item in CleanupItems)
+            item.IsSelected = false;
+
+        UpdateProperties();
     }
 
     [RelayCommand]
@@ -196,8 +328,8 @@ public partial class DiskCleanupViewModel(
         {
             logger.LogError(ex, "Failed to open folder: {Path}", item.Path);
             snackbarService.Show(
-                Translations.Snackbar_OpenFailed_Title,
-                Translations.Snackbar_OpenFailed_Message,
+                Loc.Instance["Snackbar.OpenFailed.Title"],
+                Loc.Instance["Snackbar.OpenFailed.Message"],
                 ControlAppearance.Danger,
                 new SymbolIcon { Symbol = SymbolRegular.ErrorCircle24, Filled = true },
                 TimeSpan.FromSeconds(3)
@@ -235,5 +367,6 @@ public partial class DiskCleanupViewModel(
         OnPropertyChanged(nameof(TotalSizeFormatted));
         OnPropertyChanged(nameof(TotalFileCount));
         OnPropertyChanged(nameof(CanClean));
+        OnPropertyChanged(nameof(IsAllSelected));
     }
 }

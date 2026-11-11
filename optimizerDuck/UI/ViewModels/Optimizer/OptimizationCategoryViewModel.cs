@@ -1,9 +1,8 @@
-using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Net.Http;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -15,34 +14,66 @@ using optimizerDuck.Domain.Optimizations.Models;
 using optimizerDuck.Domain.Revert;
 using optimizerDuck.Domain.UI;
 using optimizerDuck.Resources.Languages;
-using optimizerDuck.Services;
-using optimizerDuck.Services.Managers;
+using optimizerDuck.Services.Conditions;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.Optimization;
+using optimizerDuck.Services.Revert;
+using optimizerDuck.Services.System;
 using optimizerDuck.UI.Dialogs;
 using optimizerDuck.UI.ViewModels.Dialogs;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
+using Wpf.Ui.Extensions;
 using TextBlock = Wpf.Ui.Controls.TextBlock;
 
 namespace optimizerDuck.UI.ViewModels.Optimizer;
 
 public partial class OptimizationCategoryViewModel : ViewModel
 {
-    private static readonly HttpClient httpClient = new() { Timeout = TimeSpan.FromSeconds(5) };
-    private static readonly ConcurrentDictionary<
-        string,
-        Lazy<Task<(string Content, DateTime FetchedAt)>>
-    > _sourceCache = new();
-    private static readonly TimeSpan SourceCacheTtl = TimeSpan.FromMinutes(5);
+    #region Cache & Constants
+
+    private static readonly TimeSpan FilterDebounceDelay = TimeSpan.FromMilliseconds(250);
+
+    #endregion
+
+    #region Dependencies & Constructor
 
     private readonly List<IOptimization> _allOptimizations = [];
+    private CancellationTokenSource? _filterDebounceCts;
 
     private readonly IOptionsMonitor<AppSettings> _appOptionsMonitor;
     private readonly IOptimizationCategory _category;
     private readonly IContentDialogService _contentDialogService;
     private readonly ILogger<OptimizationCategoryViewModel> _logger;
+    private readonly SystemInfoService _systemInfoService;
     private readonly OptimizationService _optimizationService;
     private readonly RevertManager _revertManager;
     private readonly ISnackbarService _snackbarService;
+
+    public OptimizationCategoryViewModel(
+        IOptimizationCategory category,
+        OptimizationService optimizationService,
+        RevertManager revertManager,
+        ISnackbarService snackbarService,
+        IContentDialogService contentDialogService,
+        SystemInfoService systemInfoService,
+        ILogger<OptimizationCategoryViewModel> logger,
+        IOptionsMonitor<AppSettings> appOptionsMonitor
+    )
+    {
+        _category = category;
+        _optimizationService = optimizationService;
+        _revertManager = revertManager;
+        _snackbarService = snackbarService;
+        _logger = logger;
+        _contentDialogService = contentDialogService;
+        _systemInfoService = systemInfoService;
+        _appOptionsMonitor = appOptionsMonitor;
+    }
+
+    #endregion
+
+    #region Observable Properties
 
     [ObservableProperty]
     private bool _hideApplied;
@@ -57,7 +88,6 @@ public partial class OptimizationCategoryViewModel : ViewModel
     [ObservableProperty]
     private ObservableCollection<IOptimization> _optimizations = [];
 
-    // Search, Filter, Sort
     [ObservableProperty]
     private string _searchText = string.Empty;
 
@@ -66,52 +96,47 @@ public partial class OptimizationCategoryViewModel : ViewModel
 
     [ObservableProperty]
     private int _selectedSortByIndex; // 0=Risk & Status, 1=Name, 2=Risk, 3=Status
+    #endregion
 
-    public OptimizationCategoryViewModel(
-        IOptimizationCategory category,
-        OptimizationService optimizationService,
-        RevertManager revertManager,
-        ISnackbarService snackbarService,
-        IContentDialogService contentDialogService,
-        ILogger<OptimizationCategoryViewModel> logger,
-        IOptionsMonitor<AppSettings> appOptionsMonitor
-    )
+    #region Filter & Search
+
+    public bool HasAppliedOptimizations =>
+        _allOptimizations.Any(o => o.State.IsApplied || o.State.IsAlreadyOptimal);
+
+    partial void OnSearchTextChanged(string value) => ScheduleApplyFilter();
+
+    partial void OnSelectedRiskFilterIndexChanged(int value) => ApplyFilter();
+
+    partial void OnSelectedSortByIndexChanged(int value) => ApplyFilter();
+
+    partial void OnHideAppliedChanged(bool value) => ApplyFilter();
+
+    private void ScheduleApplyFilter()
     {
-        _category = category;
-        _optimizationService = optimizationService;
-        _revertManager = revertManager;
-        _snackbarService = snackbarService;
-        _logger = logger;
-        _contentDialogService = contentDialogService;
-        _appOptionsMonitor = appOptionsMonitor;
+        _filterDebounceCts?.Cancel();
+        _filterDebounceCts?.Dispose();
+        _filterDebounceCts = new CancellationTokenSource();
+        var token = _filterDebounceCts.Token;
+
+        _ = Task.Run(
+            async () =>
+            {
+                try
+                {
+                    await Task.Delay(FilterDebounceDelay, token).ConfigureAwait(false);
+                    if (!token.IsCancellationRequested)
+                        await UiThread.InvokeAsync(ApplyFilter, DispatcherPriority.Background);
+                }
+                catch (OperationCanceledException)
+                {
+                    // A newer keystroke cancelled the debounce delay.
+                }
+            },
+            token
+        );
     }
 
-    public bool HasAppliedOptimizations => _allOptimizations.Any(o => o.State.IsApplied);
-
-    partial void OnSearchTextChanged(string value)
-    {
-        ApplyFilter();
-    }
-
-    partial void OnSelectedRiskFilterIndexChanged(int value)
-    {
-        ApplyFilter();
-    }
-
-    partial void OnSelectedSortByIndexChanged(int value)
-    {
-        ApplyFilter();
-    }
-
-    partial void OnHideAppliedChanged(bool value)
-    {
-        ApplyFilter();
-    }
-
-    public override async Task OnNavigatedToAsync()
-    {
-        await LoadOptimizationStatesAsync();
-    }
+    #endregion
 
     #region CanExecutes
 
@@ -125,181 +150,42 @@ public partial class OptimizationCategoryViewModel : ViewModel
     #region Commands
 
     /// <summary>
-    ///     Toggles the optimization.
+    ///     Applies the optimization when it is not applied and reverts it when it is.
     /// </summary>
-    /// <param name="optimization">The optimization to toggle.</param>
+    /// <param name="optimization">The optimization to apply or revert.</param>
     [RelayCommand(CanExecute = nameof(CanToggleOptimization))]
     private async Task ToggleOptimizationAsync(IOptimization optimization)
     {
+        IsProcessing = true;
         try
         {
-            // Keep a stable reference to the previous state in case we need to roll back UI changes.
-            var wasApplied = await OptimizationService.IsAppliedAsync(optimization.Id);
+            var wasApplied = await RevertManager.IsAppliedAsync(optimization.Id);
 
-            var restorePointCreated = false;
-            if (!_optimizationService.WasRequestedRestorePoint)
-            {
-                var (proceed, created) = await HandleRestorePointAsync();
-                if (!proceed)
-                {
-                    optimization.State.IsApplied = wasApplied;
-                    return;
-                }
-
-                restorePointCreated = created;
-                _optimizationService.WasRequestedRestorePoint = true;
-            }
+            var (canProceed, restorePointCreated) = await EnsureRestorePointAsync(
+                optimization,
+                wasApplied
+            );
+            if (!canProceed)
+                return;
 
             try
             {
-                // Apply optimization if not already applied
                 if (!wasApplied)
-                {
-                    _logger.LogInformation(
-                        "===== START applying optimization {OptimizationName} ({OptimizationId}) =====",
-                        optimization.OptimizationKey,
-                        optimization.Id
-                    );
-                    var applyResult = await RunWithProcessingDialogAsync(
-                        optimization,
-                        progress => _optimizationService.ApplyAsync(optimization, progress)
-                    );
-
-                    // If result status is Failed, we can't retry it
-                    if (applyResult.Status == OptimizationSuccessResult.Failed)
-                    {
-                        ShowOperationOutcomeSnackbar(
-                            OperationNotificationState.Failed,
-                            OptimizationOperation.Apply,
-                            applyResult.Message,
-                            restorePointCreated
-                        );
-
-                        _logger.LogWarning(
-                            "Apply failed for {Name}: {Message}",
-                            optimization.OptimizationKey,
-                            applyResult.Message
-                        );
-
-                        _logger.LogInformation(
-                            "===== END applying optimization {OptimizationName} ({OptimizationId}) =====",
-                            optimization.OptimizationKey,
-                            optimization.Id
-                        );
-
-                        await OptimizationService.UpdateOptimizationStateAsync(optimization);
-                        return;
-                    }
-
-                    ((App)Application.Current).HasPendingChanges = true;
-
-                    // Retry only if there are some successful steps and some failed steps
-                    var retryOutcome = await HandleRetryableFailuresAsync(
-                        optimization,
-                        applyResult.FailedSteps,
-                        OptimizationOperation.Apply
-                    );
-
-                    await OptimizationService.UpdateOptimizationStateAsync(optimization);
-
-                    var notificationState = ResolveApplyNotificationState(
-                        applyResult,
-                        retryOutcome
-                    );
-
-                    ShowOperationOutcomeSnackbar(
-                        notificationState,
-                        OptimizationOperation.Apply,
-                        applyResult.Message,
-                        restorePointCreated
-                    );
-
-                    if (notificationState == OperationNotificationState.Success)
-                        _logger.LogInformation(
-                            "Successfully applied {Name}",
-                            optimization.OptimizationKey
-                        );
-                    else if (notificationState == OperationNotificationState.Partial)
-                        _logger.LogWarning(
-                            "Partially applied {Name}",
-                            optimization.OptimizationKey
-                        );
-                    else
-                        _logger.LogWarning("Failed to apply {Name}", optimization.OptimizationKey);
-
-                    _logger.LogInformation(
-                        "===== END applying optimization {OptimizationName} ({OptimizationId}) =====",
-                        optimization.OptimizationKey,
-                        optimization.Id
-                    );
-                }
+                    await ApplyOptimizationAsync(optimization, restorePointCreated);
                 else
-                {
-                    // Revert optimization if already applied
-                    _logger.LogInformation(
-                        "===== START reverting optimization {OptimizationName} ({OptimizationId}) =====",
-                        optimization.OptimizationKey,
-                        optimization.Id
-                    );
-
-                    var revertResult = await RunWithProcessingDialogAsync(
-                        optimization,
-                        progress => _optimizationService.RevertAsync(optimization, progress)
-                    );
-
-                    var retryOutcome = await HandleRetryableFailuresAsync(
-                        optimization,
-                        revertResult.FailedSteps,
-                        OptimizationOperation.Revert
-                    );
-
-                    await OptimizationService.UpdateOptimizationStateAsync(optimization);
-
-                    var notificationState = ResolveRevertNotificationState(
-                        revertResult,
-                        retryOutcome
-                    );
-
-                    ShowOperationOutcomeSnackbar(
-                        notificationState,
-                        OptimizationOperation.Revert,
-                        revertResult.Message,
-                        restorePointCreated
-                    );
-
-                    if (notificationState == OperationNotificationState.Success)
-                        _logger.LogInformation(
-                            "Successfully reverted {Name}",
-                            optimization.OptimizationKey
-                        );
-                    else if (notificationState == OperationNotificationState.Partial)
-                        _logger.LogWarning(
-                            "Partially reverted {Name}",
-                            optimization.OptimizationKey
-                        );
-                    else
-                        _logger.LogWarning("Failed to revert {Name}", optimization.OptimizationKey);
-                    _logger.LogInformation(
-                        "===== END reverting optimization {OptimizationName} ({OptimizationId}) =====",
-                        optimization.OptimizationKey,
-                        optimization.Id
-                    );
-                }
+                    await RevertOptimizationAsync(optimization, restorePointCreated);
             }
             catch (Exception ex)
             {
-                optimization.State.IsApplied = wasApplied; // revert UI state on failure
+                optimization.State.IsApplied = wasApplied;
                 _logger.LogError(
                     ex,
                     "Failed to toggle optimization {Name}",
                     optimization.OptimizationKey
                 );
                 _snackbarService.Show(
-                    Translations.Optimization_Toggle_Snackbar_Error_Title,
-                    string.Format(
-                        Translations.Optimization_Toggle_Snackbar_Error_Message,
-                        ex.Message
-                    ),
+                    Loc.Instance["Optimization.Toggle.Snackbar.Error.Title"],
+                    Loc.Instance["Optimization.Toggle.Snackbar.Error.Message", ex.Message],
                     ControlAppearance.Danger,
                     new SymbolIcon { Symbol = SymbolRegular.ErrorCircle24, Filled = true },
                     TimeSpan.FromSeconds(5)
@@ -313,9 +199,201 @@ public partial class OptimizationCategoryViewModel : ViewModel
     }
 
     /// <summary>
-    ///     Shows the details of an optimization.
+    ///     Ensures a restore point is created before modifying system settings.
     /// </summary>
-    /// <param name="optimization">The optimization to show details for.</param>
+    private async Task<(bool Proceed, bool RestorePointCreated)> EnsureRestorePointAsync(
+        IOptimization optimization,
+        bool wasApplied
+    )
+    {
+        if (_optimizationService.WasRequestedRestorePoint)
+            return (true, false);
+
+        var (proceed, created) = await HandleRestorePointAsync();
+        if (!proceed)
+        {
+            optimization.State.IsApplied = wasApplied;
+            return (false, false);
+        }
+
+        _optimizationService.WasRequestedRestorePoint = true;
+        return (true, created);
+    }
+
+    /// <summary>
+    ///     Applies an optimization with progress reporting and retry handling.
+    /// </summary>
+    /// <param name="optimization">The optimization to apply.</param>
+    /// <param name="restorePointCreated">Whether a restore point was created beforehand.</param>
+    private async Task ApplyOptimizationAsync(IOptimization optimization, bool restorePointCreated)
+    {
+        _logger.LogInformation(
+            "===== START applying {Name} ({Id}) =====",
+            optimization.OptimizationKey,
+            optimization.Id
+        );
+
+        var applyResult = await RunWithProcessingDialogAsync(
+            optimization,
+            p => _optimizationService.ApplyAsync(optimization, p)
+        );
+
+        // A complete failure leaves nothing to retry.
+        if (applyResult.Status == OptimizationSuccessResult.Failed)
+        {
+            ShowOperationOutcomeSnackbar(
+                OperationNotificationState.Failed,
+                OptimizationOperation.Apply,
+                applyResult.Message,
+                restorePointCreated
+            );
+            _logger.LogWarning("Apply failed: {Message}", applyResult.Message);
+            await FinalizeOperationAsync(optimization);
+            return;
+        }
+
+        // Nothing to do changes nothing: the card is marked for this session and the pending
+        // changes prompt stays untouched.
+        optimization.State.IsAlreadyOptimal =
+            applyResult.Status == OptimizationSuccessResult.NothingToDo;
+
+        if (applyResult.Status == OptimizationSuccessResult.NothingToDo)
+        {
+            await FinalizeOperationAsync(optimization);
+            OnPropertyChanged(nameof(HasAppliedOptimizations));
+            ShowOperationOutcomeSnackbar(
+                OperationNotificationState.NothingToDo,
+                OptimizationOperation.Apply,
+                applyResult.Message,
+                restorePointCreated
+            );
+            LogOperationOutcome(OperationNotificationState.NothingToDo, "apply", optimization);
+            _logger.LogInformation(
+                "===== END applying {Name} ({Id}) =====",
+                optimization.OptimizationKey,
+                optimization.Id
+            );
+            return;
+        }
+
+        if (Application.Current is App app)
+            app.HasPendingChanges = true;
+
+        var retryOutcome = await HandleRetryableFailuresAsync(
+            optimization,
+            applyResult.FailedSteps,
+            OptimizationOperation.Apply
+        );
+
+        var notificationState = ResolveApplyNotificationState(applyResult, retryOutcome);
+        await FinalizeOperationAsync(optimization);
+        ShowOperationOutcomeSnackbar(
+            notificationState,
+            OptimizationOperation.Apply,
+            applyResult.Message,
+            restorePointCreated
+        );
+
+        LogOperationOutcome(notificationState, "apply", optimization);
+        _logger.LogInformation(
+            "===== END applying {Name} ({Id}) =====",
+            optimization.OptimizationKey,
+            optimization.Id
+        );
+    }
+
+    /// <summary>
+    ///     Reverts an optimization with progress reporting and retry handling.
+    /// </summary>
+    /// <param name="optimization">The optimization to revert.</param>
+    /// <param name="restorePointCreated">Whether a restore point was created beforehand.</param>
+    private async Task RevertOptimizationAsync(IOptimization optimization, bool restorePointCreated)
+    {
+        _logger.LogInformation(
+            "===== START reverting {Name} ({Id}) =====",
+            optimization.OptimizationKey,
+            optimization.Id
+        );
+
+        var revertResult = await RunWithProcessingDialogAsync(
+            optimization,
+            p => _optimizationService.RevertAsync(optimization, p)
+        );
+
+        // The revert invalidates the applied mark, whatever the last apply reported.
+        optimization.State.IsAlreadyOptimal = false;
+
+        if (Application.Current is App app)
+            app.HasPendingChanges = true;
+
+        var retryOutcome = await HandleRetryableFailuresAsync(
+            optimization,
+            revertResult.FailedSteps,
+            OptimizationOperation.Revert
+        );
+
+        var notificationState = ResolveRevertNotificationState(revertResult, retryOutcome);
+        await FinalizeOperationAsync(optimization);
+        ShowOperationOutcomeSnackbar(
+            notificationState,
+            OptimizationOperation.Revert,
+            revertResult.Message,
+            restorePointCreated
+        );
+
+        LogOperationOutcome(notificationState, "revert", optimization);
+        _logger.LogInformation(
+            "===== END reverting {Name} ({Id}) =====",
+            optimization.OptimizationKey,
+            optimization.Id
+        );
+    }
+
+    private static async Task FinalizeOperationAsync(IOptimization optimization)
+    {
+        await OptimizationService.UpdateOptimizationStateAsync(optimization);
+    }
+
+    private void LogOperationOutcome(
+        OperationNotificationState notificationState,
+        string operationName,
+        IOptimization optimization
+    )
+    {
+        var level =
+            notificationState == OperationNotificationState.Success ? LogLevel.Information
+            : notificationState == OperationNotificationState.NothingToDo ? LogLevel.Information
+            : notificationState == OperationNotificationState.Partial ? LogLevel.Warning
+            : LogLevel.Warning;
+
+        var pastTense = operationName switch
+        {
+            "apply" => "applied",
+            "revert" => "reverted",
+            _ => $"{operationName}ed",
+        };
+
+        var message =
+            notificationState == OperationNotificationState.Success ? $"Successfully {pastTense}"
+            : notificationState == OperationNotificationState.NothingToDo
+                ? $"Nothing to {operationName} for"
+            : notificationState == OperationNotificationState.Partial ? $"Partially {pastTense}"
+            : $"Failed to {operationName}";
+
+        _logger.Log(level, "{Message}: {Name}", message, optimization.OptimizationKey);
+    }
+
+    /// <summary>
+    ///     Hides the unsupported condition state for this session, so the optimization shows its
+    ///     normal card and can be applied anyway. The hide choice is not persisted.
+    /// </summary>
+    [RelayCommand]
+    private void HideCondition(IOptimization optimization)
+    {
+        if (optimization is BaseOptimization baseOptimization)
+            baseOptimization.IsConditionHidden = true;
+    }
+
     [RelayCommand]
     private async Task ShowDetailsAsync(IOptimization optimization)
     {
@@ -329,7 +407,7 @@ public partial class OptimizationCategoryViewModel : ViewModel
         {
             Title = BuildDialogTitle(optimization),
             Content = dialogContent,
-            CloseButtonText = Translations.Button_Ok,
+            CloseButtonText = Loc.Instance["Button.Ok"],
         };
         var result = await _contentDialogService.ShowAsync(dialog, CancellationToken.None);
     }
@@ -340,90 +418,44 @@ public partial class OptimizationCategoryViewModel : ViewModel
         if (optimization is not BaseOptimization baseOpt || baseOpt.OwnerType == null)
             return;
 
-        var fileName = baseOpt.OwnerType.Name;
-        var className = optimization.OptimizationKey;
-        var namespacePath = (baseOpt.OwnerType.Namespace ?? string.Empty).Replace('.', '/');
-        var relativePath = $"{namespacePath}/{fileName}.cs";
-        var url = $"{Shared.GitHubRepoURL}/blob/master/{relativePath}";
-
-        // Fetch source from GitHub raw content to find the class line number
-        try
-        {
-            var rawUrl =
-                $"https://raw.githubusercontent.com/itsfatduck/optimizerDuck/master/{relativePath}";
-
-            var cached = _sourceCache.GetOrAdd(rawUrl, CreateSourceCacheEntry);
-
-            var cachedSource = await cached.Value;
-            if (DateTime.UtcNow - cachedSource.FetchedAt >= SourceCacheTtl)
-            {
-                var refreshed = CreateSourceCacheEntry(rawUrl);
-                _sourceCache[rawUrl] = refreshed;
-                cachedSource = await refreshed.Value;
-            }
-
-            var source = cachedSource.Content;
-
-            var lines = source.Split('\n');
-            for (var i = 0; i < lines.Length; i++)
-                if (lines[i].Contains($"class {className} : {nameof(BaseOptimization)}", StringComparison.OrdinalIgnoreCase))
-                {
-                    url += $"#L{i + 1}";
-                    break;
-                }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(
-                ex,
-                "Could not fetch source to find line number for {Class}",
-                className
-            );
-        }
-
-        try
-        {
-            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to open GitHub URL: {Url}", url);
-            _snackbarService.Show(
-                Translations.Snackbar_OpenLinkFailed_Title,
-                Translations.Snackbar_OpenLinkFailed_Message,
-                ControlAppearance.Danger,
-                new SymbolIcon { Symbol = SymbolRegular.ErrorCircle24, Filled = true },
-                TimeSpan.FromSeconds(5)
-            );
-        }
+        await GitHubSourceHelper.OpenSourceOnGitHubAsync(
+            baseOpt.OwnerType,
+            optimization.OptimizationKey,
+            nameof(BaseOptimization),
+            _logger,
+            _snackbarService
+        );
     }
 
     #endregion Commands
 
     #region Helpers
 
-    private async Task LoadOptimizationStatesAsync()
+    protected override async Task InitializeOnceAsync()
     {
-        if (_allOptimizations.Count > 0)
-            return;
-
         IsLoading = true;
         try
         {
-            // Allow UI to render loading ring
-            await Task.Delay(1);
-
             foreach (var optimization in _category.Optimizations)
             {
-                optimization.State.PropertyChanged += (_, e) =>
-                {
-                    if (e.PropertyName == nameof(OptimizationState.IsApplied))
-                        OnPropertyChanged(nameof(HasAppliedOptimizations));
-                };
+                // Subscribing to the optimization rather than to its nested State keeps this
+                // subscription alive when BaseOptimization replaces the State instance.
+                if (optimization is INotifyPropertyChanged notify)
+                    notify.PropertyChanged += OnOptimizationStateChanged;
                 _allOptimizations.Add(optimization);
             }
 
-            ApplyFilter();
+            var snapshot = await _systemInfoService.EnsureSnapshotAsync();
+            if (snapshot.IsUnknown)
+                _logger.LogWarning(
+                    "System snapshot is unavailable; conditions fail open for this session"
+                );
+
+            await UiThread.InvokeAsync(() =>
+            {
+                EvaluateConditions(snapshot);
+                ApplyFilter();
+            });
         }
         finally
         {
@@ -431,23 +463,72 @@ public partial class OptimizationCategoryViewModel : ViewModel
         }
     }
 
-    private static Lazy<Task<(string Content, DateTime FetchedAt)>> CreateSourceCacheEntry(
-        string rawUrl
-    )
+    /// <summary>
+    ///     Re-evaluates every condition and re-applies the filter when the system snapshot is
+    ///     refreshed.
+    /// </summary>
+    private void OnSnapshotRefreshed(object? sender, SystemInfo snapshot) =>
+        ReEvaluateConditions(snapshot);
+
+    private void OnCultureChanged(object? sender, PropertyChangedEventArgs e) =>
+        ReEvaluateConditions(_systemInfoService.Snapshot);
+
+    private void ReEvaluateConditions(SystemInfo snapshot)
     {
-        return new Lazy<Task<(string Content, DateTime FetchedAt)>>(
-            async () => (await httpClient.GetStringAsync(rawUrl), DateTime.UtcNow)
+        _ = UiThread.InvokeAsync(() =>
+        {
+            EvaluateConditions(snapshot);
+            ApplyFilter();
+        });
+    }
+
+    /// <summary>
+    ///     Keeps <see cref="HasAppliedOptimizations"/> in sync when any optimization's
+    ///     <see cref="IOptimization.State"/> changes (applied status or instance swap).
+    /// </summary>
+    private void OnOptimizationStateChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(IOptimization.State))
+            OnPropertyChanged(nameof(HasAppliedOptimizations));
+    }
+
+    /// <inheritdoc />
+    public override Task OnNavigatedToAsync()
+    {
+        _systemInfoService.SnapshotRefreshed += OnSnapshotRefreshed;
+        Loc.Instance.PropertyChanged += OnCultureChanged;
+        return base.OnNavigatedToAsync();
+    }
+
+    /// <inheritdoc />
+    public override Task OnNavigatedFromAsync()
+    {
+        _systemInfoService.SnapshotRefreshed -= OnSnapshotRefreshed;
+        Loc.Instance.PropertyChanged -= OnCultureChanged;
+        return base.OnNavigatedFromAsync();
+    }
+
+    /// <summary>
+    ///     Re-evaluates every optimization's condition against the system snapshot.
+    /// </summary>
+    private void EvaluateConditions(SystemInfo snapshot)
+    {
+        ConditionEvaluator.EvaluateAll(
+            _allOptimizations,
+            o => o.ConditionType,
+            (o, r) => o.ConditionResult = r,
+            snapshot,
+            _logger
         );
     }
 
     /// <summary>
-    ///     Apply current filters to the optimizations.
+    ///     Applies the current search, risk filter and sort to the optimizations.
     /// </summary>
     private void ApplyFilter()
     {
         var query = _allOptimizations.AsEnumerable();
 
-        // Search
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
             var search = SearchText.Trim();
@@ -457,7 +538,6 @@ public partial class OptimizationCategoryViewModel : ViewModel
             );
         }
 
-        // Filter by risk
         query = SelectedRiskFilterIndex switch
         {
             1 => query.Where(o => o.Risk == OptimizationRisk.Safe),
@@ -466,359 +546,21 @@ public partial class OptimizationCategoryViewModel : ViewModel
             _ => query,
         };
 
-        // Hide applied
         if (HideApplied)
-            query = query.Where(o => !o.State.IsApplied);
+            query = query.Where(o => !o.State.IsApplied && !o.State.IsAlreadyOptimal);
 
-        // Sort
         query = SelectedSortByIndex switch
         {
             1 => query.OrderBy(o => o.Name),
             2 => query.OrderBy(o => o.Risk),
-            3 => query.OrderByDescending(o => o.State.IsApplied ? 1 : 0), // Status
-            _ => query.OrderBy(o => o.Risk).ThenByDescending(o => o.State.IsApplied ? 1 : 0), // Risk & Status (default)
+            3 => query.OrderByDescending(o => o.State.IsApplied ? 1 : 0),
+            _ => query.OrderBy(o => o.Risk).ThenByDescending(o => o.State.IsApplied ? 1 : 0),
         };
 
         var filtered = query.ToList();
         Optimizations = new ObservableCollection<IOptimization>(filtered);
 
         OnPropertyChanged(nameof(HasAppliedOptimizations));
-    }
-
-    /// <summary>
-    ///     Run a long-running action with a processing dialog.
-    /// </summary>
-    /// <param name="optimization">The optimization to run the action for.</param>
-    /// <param name="action">The action to run.</param>
-    /// <typeparam name="T">The return type of the action.</typeparam>
-    /// <returns>The result of the action.</returns>
-    private async Task<T> RunWithProcessingDialogAsync<T>(
-        IOptimization optimization,
-        Func<IProgress<ProcessingProgress>, Task<T>> action
-    )
-    {
-        var viewModel = new ProcessingViewModel();
-        var dialog = new ContentDialog
-        {
-            Title = BuildDialogTitle(optimization),
-            Content = new ProcessingDialog { DataContext = viewModel },
-            IsFooterVisible = false,
-        };
-
-        _ = _contentDialogService.ShowAsync(dialog, CancellationToken.None);
-
-        try
-        {
-            return await action(viewModel.ProgressReporter);
-        }
-        finally
-        {
-            dialog.Hide();
-        }
-    }
-
-    /// <summary>
-    ///     Handle failed steps for an optimization.
-    /// </summary>
-    /// <param name="optimization">The optimization that failed.</param>
-    /// <param name="failedSteps">The failed steps.</param>
-    /// <param name="operation">The operation currently being processed.</param>
-    /// <returns>The retry outcome.</returns>
-    private async Task<FailureResolutionOutcome> HandleRetryableFailuresAsync(
-        IOptimization optimization,
-        IReadOnlyList<OperationStepResult> failedSteps,
-        OptimizationOperation operation
-    )
-    {
-        if (failedSteps.Count == 0)
-            return FailureResolutionOutcome.NoFailures;
-
-        // Always keep steps ordered by their original index for a stable UI.
-        var remainingFailedSteps = failedSteps.OrderBy(s => s.Index).ToList();
-        while (remainingFailedSteps.Count > 0)
-        {
-            var dialogViewModel = new OptimizationResultDialogViewModel(remainingFailedSteps);
-            var dialogContent = new OptimizationResultDialog { DataContext = dialogViewModel };
-
-            var dialog = new ContentDialog
-            {
-                Title = BuildDialogTitle(optimization),
-                Content = dialogContent,
-                PrimaryButtonText = Translations.Button_Retry,
-                CloseButtonText = Translations.Button_Cancel,
-            };
-
-            var result = await _contentDialogService.ShowAsync(dialog, CancellationToken.None);
-            if (result != ContentDialogResult.Primary)
-                return FailureResolutionOutcome.Deferred;
-
-            if (operation == OptimizationOperation.Revert)
-            {
-                remainingFailedSteps = (
-                    await RunWithProcessingDialogAsync(
-                        optimization,
-                        progress =>
-                            OptimizationService.RetryFailedStepsAsync(
-                                remainingFailedSteps,
-                                true,
-                                _logger,
-                                progress
-                            )
-                    )
-                )
-                    .OrderBy(s => s.Index)
-                    .ToList();
-
-                if (remainingFailedSteps.Count == 0)
-                {
-                    _revertManager.RemoveRevertData(optimization.Id, optimization.OptimizationKey);
-                    await OptimizationService.UpdateOptimizationStateAsync(optimization);
-                    return FailureResolutionOutcome.Recovered;
-                }
-            }
-            else
-            {
-                var retryResult = await RunWithProcessingDialogAsync(
-                    optimization,
-                    progress =>
-                        OptimizationService.RetryFailedStepsWithResultsAsync(
-                            remainingFailedSteps,
-                            false,
-                            _logger,
-                            progress
-                        )
-                );
-
-                var newFailed = retryResult.FailedSteps.OrderBy(s => s.Index).ToList();
-
-                foreach (var s in retryResult.RecoveredSteps.Where(s => s.RevertStep != null))
-                    await _revertManager.UpsertRevertStepAtIndexAsync(
-                        optimization.Id,
-                        optimization.OptimizationKey,
-                        s.Index,
-                        s.RevertStep!
-                    );
-
-                remainingFailedSteps = newFailed;
-                if (remainingFailedSteps.Count == 0)
-                    return FailureResolutionOutcome.Recovered;
-            }
-        }
-
-        return FailureResolutionOutcome.Recovered;
-    }
-
-    private static OperationNotificationState ResolveApplyNotificationState(
-        OptimizationResult applyResult,
-        FailureResolutionOutcome retryOutcome
-    )
-    {
-        if (
-            applyResult.Status == OptimizationSuccessResult.Success
-            || retryOutcome == FailureResolutionOutcome.Recovered
-        )
-            return OperationNotificationState.Success;
-
-        return retryOutcome == FailureResolutionOutcome.Deferred
-            ? OperationNotificationState.Partial
-            : OperationNotificationState.Failed;
-    }
-
-    private static OperationNotificationState ResolveRevertNotificationState(
-        RevertResult revertResult,
-        FailureResolutionOutcome retryOutcome
-    )
-    {
-        if (revertResult.Success || retryOutcome == FailureResolutionOutcome.Recovered)
-            return OperationNotificationState.Success;
-
-        return revertResult.AllStepsFailed
-            ? OperationNotificationState.Failed
-            : OperationNotificationState.Partial;
-    }
-
-    /// <summary>
-    ///     Shows a snackbar notification based on the operation outcome.
-    /// </summary>
-    /// <param name="notificationState">The notification state to show.</param>
-    /// <param name="operation">The type of operation.</param>
-    /// <param name="message">The message to show.</param>
-    /// <param name="restorePointCreated">Whether a restore point was created.</param>
-    private void ShowOperationOutcomeSnackbar(
-        OperationNotificationState notificationState,
-        OptimizationOperation operation,
-        string message,
-        bool restorePointCreated = false
-    )
-    {
-        var showSuccess = _appOptionsMonitor.CurrentValue.Optimize.ShowCompletionNotification;
-        var finalMessage = message;
-
-        if (restorePointCreated && showSuccess)
-            finalMessage +=
-                "\n"
-                + string.Format(
-                    Translations.RestorePoint_Snackbar_Success_Message,
-                    Shared.RestorePointName
-                );
-
-        if (notificationState == OperationNotificationState.Success)
-        {
-            if (showSuccess)
-                _snackbarService.Show(
-                    operation == OptimizationOperation.Apply
-                        ? Translations.Optimization_Apply_Snackbar_Success_Title
-                        : Translations.Optimization_Revert_Snackbar_Success_Title,
-                    finalMessage,
-                    ControlAppearance.Success,
-                    new SymbolIcon { Symbol = SymbolRegular.CheckmarkCircle24, Filled = true },
-                    TimeSpan.FromSeconds(5)
-                );
-        }
-        else if (notificationState == OperationNotificationState.Partial)
-        {
-            _snackbarService.Show(
-                operation == OptimizationOperation.Apply
-                    ? Translations.Optimization_Apply_Snackbar_Error_Title
-                    : Translations.Optimization_Revert_Snackbar_Error_Title,
-                finalMessage,
-                ControlAppearance.Caution,
-                new SymbolIcon { Symbol = SymbolRegular.Warning24, Filled = true },
-                TimeSpan.FromSeconds(5)
-            );
-        }
-        else if (notificationState == OperationNotificationState.Failed)
-        {
-            _snackbarService.Show(
-                operation == OptimizationOperation.Apply
-                    ? Translations.Optimization_Apply_Snackbar_Error_Title
-                    : Translations.Optimization_Revert_Snackbar_Error_Title,
-                finalMessage,
-                ControlAppearance.Danger,
-                new SymbolIcon { Symbol = SymbolRegular.ErrorCircle24, Filled = true },
-                TimeSpan.FromSeconds(5)
-            );
-        }
-    }
-
-    /// <summary>
-    ///     Handles the restore point dialog.
-    /// </summary>
-    /// <returns>Whether the user accepted the restore point dialog.</returns>
-    private async Task<(bool Proceed, bool RestorePointCreated)> HandleRestorePointAsync()
-    {
-        var dialogContent = new RestorePointDialog();
-        var dialog = new ContentDialog
-        {
-            Title = Translations.RestorePoint_Title,
-            Content = dialogContent,
-
-            PrimaryButtonText = Translations.Button_Ok,
-            SecondaryButtonText = Translations.Button_Skip,
-            CloseButtonText = Translations.Button_Cancel,
-        };
-
-        var result = await _contentDialogService.ShowAsync(dialog, CancellationToken.None);
-        if (result == ContentDialogResult.None) // User cancelled
-            return (false, false);
-
-        if (result == ContentDialogResult.Secondary) // User skipped
-            return (true, false);
-
-        var resultState = await _optimizationService.CreateRestorePointAsync();
-        var restorePointCreated = false;
-
-        switch (resultState)
-        {
-            case RestorePointResult.Success:
-                // if setting show snackbar after applied successfully was off, so show it and applied snackbar wont conflict this
-                if (!_appOptionsMonitor.CurrentValue.Optimize.ShowCompletionNotification)
-                {
-                    _snackbarService.Show(
-                        Translations.RestorePoint_Snackbar_Success_Title,
-                        string.Format(
-                            Translations.RestorePoint_Snackbar_Success_Message,
-                            Shared.RestorePointName
-                        ),
-                        ControlAppearance.Success,
-                        new SymbolIcon { Symbol = SymbolRegular.CheckmarkCircle24, Filled = true },
-                        TimeSpan.FromSeconds(5)
-                    );
-                    break;
-                }
-
-                restorePointCreated = true;
-                break;
-
-            case RestorePointResult.FrequencyLimitReached:
-                _snackbarService.Show(
-                    Translations.RestorePoint_Title,
-                    Translations.RestorePoint_Snackbar_Warning_LimitReached,
-                    ControlAppearance.Caution,
-                    new SymbolIcon { Symbol = SymbolRegular.Warning24, Filled = true },
-                    TimeSpan.FromSeconds(5)
-                );
-                break;
-
-            case RestorePointResult.Failed:
-            default:
-                _snackbarService.Show(
-                    Translations.RestorePoint_Snackbar_Error_Title,
-                    Translations.RestorePoint_Snackbar_Error_Message,
-                    ControlAppearance.Danger,
-                    new SymbolIcon { Symbol = SymbolRegular.ErrorCircle24, Filled = true },
-                    TimeSpan.FromSeconds(5)
-                );
-                break;
-        }
-
-        return (true, restorePointCreated);
-    }
-
-    /// <summary>
-    ///     Builds the dialog title for an optimization.
-    /// </summary>
-    /// <param name="optimization">The optimization to build the title for.</param>
-    /// <returns>The dialog title.</returns>
-    private static StackPanel BuildDialogTitle(IOptimization optimization)
-    {
-        return new StackPanel
-        {
-            Children =
-            {
-                new TextBlock
-                {
-                    FontTypography = FontTypography.Caption,
-                    Appearance = TextColor.Disabled,
-                    Text = optimization.Id.ToString(),
-                },
-                new TextBlock
-                {
-                    FontTypography = FontTypography.Subtitle,
-                    Text = optimization.Name,
-                },
-            },
-        };
-    }
-
-    private enum FailureResolutionOutcome
-    {
-        NoFailures,
-        Recovered,
-        Deferred,
-    }
-
-    private enum OperationNotificationState
-    {
-        Success,
-        Partial,
-        Failed,
-    }
-
-    private enum OptimizationOperation
-    {
-        Apply,
-        Revert,
     }
 
     #endregion Helpers

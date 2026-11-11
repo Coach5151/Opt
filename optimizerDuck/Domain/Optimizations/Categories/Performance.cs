@@ -1,19 +1,21 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
+using optimizerDuck.Common.Extensions;
 using optimizerDuck.Domain.Abstractions;
 using optimizerDuck.Domain.Attributes;
+using optimizerDuck.Domain.Execution;
 using optimizerDuck.Domain.Optimizations.Models;
 using optimizerDuck.Domain.Optimizations.Models.Services;
 using optimizerDuck.Domain.UI;
-using optimizerDuck.Services.Managers;
-using optimizerDuck.Services.OptimizationServices;
-using optimizerDuck.UI.Pages.Optimizations;
+using optimizerDuck.Services.Configuration;
+using optimizerDuck.Services.System.Primitives;
+using optimizerDuck.UI.Pages.Optimize.Categories;
 
 namespace optimizerDuck.Domain.Optimizations.Categories;
 
 [OptimizationCategory(typeof(PerformanceOptimizerPage))]
-public class Performance : IOptimizationCategory
+public class Performance : LocalizedObject, IOptimizationCategory
 {
     public string Name => Loc.Instance[$"Optimizer.{nameof(Performance)}"];
     public OptimizationCategoryOrder Order { get; init; } = OptimizationCategoryOrder.Performance;
@@ -32,6 +34,7 @@ public class Performance : IOptimizationCategory
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications",
                     "GlobalUserDisabled",
@@ -44,58 +47,56 @@ public class Performance : IOptimizationCategory
                 )
             );
             context.Logger.LogInformation("Disabled background apps");
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 
     [Optimization(
         Id = "CD436A05-51F1-46E9-B4DE-5262EE7F812A",
         Risk = OptimizationRisk.Moderate,
-        Tags = OptimizationTags.System | OptimizationTags.Performance
+        Tags = OptimizationTags.System | OptimizationTags.Performance | OptimizationTags.Ram
     )]
-    public class SvcHostSplit : BaseOptimization
+    public class ConsolidateServiceHosts : BaseOptimization
     {
         public override Task<ApplyResult> ApplyAsync(
             IProgress<ProcessingProgress> progress,
             OptimizationContext context
         )
         {
-            if (context.Snapshot.Ram.TotalKB <= 0)
+            if (context.Snapshot.Memory.TotalKB <= 0)
             {
                 context.Logger.LogInformation(
                     "Invalid RAM value: {RamTotalKB}. Skipping...",
-                    context.Snapshot.Ram.TotalKB
+                    context.Snapshot.Memory.TotalKB
                 );
                 return Task.FromResult(
                     ApplyResult.False(
-                        string.Format(
-                            Loc.Instance[$"{ErrorPrefix}.InvalidRAM"],
-                            context.Snapshot.Ram.TotalKB
-                        )
+                        Loc.Instance[$"{ErrorPrefix}.InvalidRAM", context.Snapshot.Memory.TotalKB]
                     )
                 );
             }
 
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKLM\SYSTEM\CurrentControlSet\Control",
                     "SvcHostSplitThresholdInKB",
-                    context.Snapshot.Ram.TotalKB,
+                    context.Snapshot.Memory.TotalKB,
                     RegistryValueKind.DWord
                 )
             );
             context.Logger.LogInformation(
-                "Enabled service host splitting with threshold: {ThresholdKB} KB",
-                context.Snapshot.Ram.TotalKB
+                "Consolidated service hosts with threshold: {ThresholdKB} KB",
+                context.Snapshot.Memory.TotalKB
             );
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 
     [Optimization(
         Id = "C51E4187-BE49-4376-A97D-46C967A033B5",
         Risk = OptimizationRisk.Safe,
-        Tags = OptimizationTags.System | OptimizationTags.Performance | OptimizationTags.Power
+        Tags = OptimizationTags.System | OptimizationTags.Performance
     )]
     public class ProcessPriority : BaseOptimization
     {
@@ -126,6 +127,7 @@ public class Performance : IOptimizationCategory
             const int win32Priority = 38; // Short, Variable, High foreground boost
 
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl",
                     "Win32PrioritySeparation",
@@ -136,56 +138,20 @@ public class Performance : IOptimizationCategory
                 "Enabled foreground boost with priority: {Priority}",
                 win32Priority
             );
-            return Task.FromResult(ApplyResult.True());
-        }
-    }
-
-    [Optimization(
-        Id = "D3E93D47-FC7E-44E2-8B58-D8626A75DB93",
-        Risk = OptimizationRisk.Safe,
-        Tags = OptimizationTags.System | OptimizationTags.Performance | OptimizationTags.Power
-    )]
-    public class GameTaskScheduling : BaseOptimization
-    {
-        public override Task<ApplyResult> ApplyAsync(
-            IProgress<ProcessingProgress> progress,
-            OptimizationContext context
-        )
-        {
-            RegistryService.Write(
-                new RegistryItem(
-                    @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games",
-                    "Priority",
-                    2
-                ),
-                new RegistryItem(
-                    @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games",
-                    "Scheduling Category",
-                    "High"
-                ),
-                new RegistryItem(
-                    @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games",
-                    "SFIO Priority",
-                    "High"
-                ),
-                new RegistryItem(
-                    @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games",
-                    "GPU Priority",
-                    8
-                )
-            );
-
-            context.Logger.LogInformation("Enabled game task scheduling with high priority");
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 
     [Optimization(
         Id = "FFB49D94-CCA9-4591-B329-6FDA3A2758F9",
         Risk = OptimizationRisk.Safe,
-        Tags = OptimizationTags.System | OptimizationTags.Performance | OptimizationTags.Latency
+        Tags = OptimizationTags.System
+            | OptimizationTags.Performance
+            | OptimizationTags.Latency
+            | OptimizationTags.Audio
+            | OptimizationTags.Display
     )]
-    public class MultimediaResponsiveness : BaseOptimization
+    public class OptimizeMultimediaScheduler : BaseOptimization
     {
         public override Task<ApplyResult> ApplyAsync(
             IProgress<ProcessingProgress> progress,
@@ -196,24 +162,42 @@ public class Performance : IOptimizationCategory
                 @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile";
 
             RegistryService.Write(
+                context,
+                new RegistryItem(systemProfileKey, "NoLazyMode", 1),
+                new RegistryItem(systemProfileKey, "AlwaysOn", 1),
                 new RegistryItem(
                     systemProfileKey,
                     "NetworkThrottlingIndex",
                     unchecked((int)0xFFFFFFFF),
                     RegistryValueKind.DWord
                 ),
-                new RegistryItem(systemProfileKey, "SystemResponsiveness", 10) // minimum possible value (Values below 10 and above 100 are clamped to 20.)
+                new RegistryItem(
+                    systemProfileKey,
+                    "SystemResponsiveness",
+                    10,
+                    RegistryValueKind.DWord
+                ) // minimum possible value (Values below 10 and above 100 are clamped to 20.)
             );
 
-            context.Logger.LogInformation("Optimized multimedia responsiveness for low latency");
-            return Task.FromResult(ApplyResult.True());
+            RegistryService.Write(
+                context,
+                new RegistryItem($@"{systemProfileKey}\Tasks\Games", "Priority", 2),
+                new RegistryItem($@"{systemProfileKey}\Tasks\Games", "Scheduling Category", "High"),
+                new RegistryItem($@"{systemProfileKey}\Tasks\Games", "SFIO Priority", "High"),
+                new RegistryItem($@"{systemProfileKey}\Tasks\Games", "GPU Priority", 8)
+            );
+
+            context.Logger.LogInformation(
+                "Optimized Multimedia Class Scheduler Service (MMCSS) for gaming and low latency"
+            );
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 
     [Optimization(
         Id = "613FE85C-770D-441C-B97A-147B89B99028",
         Risk = OptimizationRisk.Safe,
-        Tags = OptimizationTags.Latency
+        Tags = OptimizationTags.Latency | OptimizationTags.System | OptimizationTags.Performance
     )]
     public class KeyboardLatencyOptimization : BaseOptimization
     {
@@ -223,18 +207,19 @@ public class Performance : IOptimizationCategory
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(@"HKEY_CURRENT_USER\Control Panel\Keyboard", "KeyboardDelay", "0"),
                 new RegistryItem(@"HKEY_CURRENT_USER\Control Panel\Keyboard", "KeyboardSpeed", "31")
             );
 
             context.Logger.LogInformation("Optimized keyboard repeat settings");
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 
     [Optimization(
         Id = "B7BB32F8-C756-47A4-83F2-F6E7EC7D45B8",
-        Risk = OptimizationRisk.Safe,
+        Risk = OptimizationRisk.Moderate,
         Tags = OptimizationTags.Latency | OptimizationTags.System
     )]
     public class DisableAccessibilityKeyboardHotkeys : BaseOptimization
@@ -245,25 +230,53 @@ public class Performance : IOptimizationCategory
         )
         {
             RegistryService.Write(
+                context,
                 new RegistryItem(
                     @"HKEY_CURRENT_USER\Control Panel\Accessibility\StickyKeys",
                     "Flags",
-                    "510"
+                    "26"
                 ),
                 new RegistryItem(
                     @"HKEY_CURRENT_USER\Control Panel\Accessibility\Keyboard Response",
                     "Flags",
-                    "122"
+                    "2"
                 ),
                 new RegistryItem(
                     @"HKEY_CURRENT_USER\Control Panel\Accessibility\ToggleKeys",
                     "Flags",
-                    "58"
+                    "34"
                 )
             );
 
             context.Logger.LogInformation("Disabled accessibility keyboard hotkeys");
-            return Task.FromResult(ApplyResult.True());
+            return Task.FromResult(context.Changes.ToApplyResult());
+        }
+    }
+
+    [Optimization(
+        Id = "D5A2F7C4-1E8B-4C93-B6D0-8F41AE92C7E3",
+        Risk = OptimizationRisk.Safe,
+        Tags = OptimizationTags.System | OptimizationTags.Network | OptimizationTags.Performance
+    )]
+    public class LiftWebDavFileSizeLimit : BaseOptimization
+    {
+        public override Task<ApplyResult> ApplyAsync(
+            IProgress<ProcessingProgress> progress,
+            OptimizationContext context
+        )
+        {
+            RegistryService.Write(
+                context,
+                new RegistryItem(
+                    @"HKLM\SYSTEM\CurrentControlSet\Services\WebClient\Parameters",
+                    "FileSizeLimitInBytes",
+                    unchecked((int)0xFFFFFFFF),
+                    RegistryValueKind.DWord
+                )
+            );
+
+            context.Logger.LogInformation("Lifted the WebDAV file size limit to 4 GB");
+            return Task.FromResult(context.Changes.ToApplyResult());
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using optimizerDuck.Resources.Languages;
+using optimizerDuck.Resources.Languages;
+using optimizerDuck.Services.Configuration;
 using Wpf.Ui.Controls;
 
 namespace optimizerDuck.Domain.UI;
@@ -11,23 +12,19 @@ public enum OptimizationTags
 {
     None = 0,
 
-    // Hardware
-    Ram = 1 << 0,
-    Display = 1 << 1,
-    Disk = 1 << 2,
-
-    // Network
-    Network = 1 << 3,
-    NetworkRequired = 1 << 4,
-
-    // System & Security
-    Privacy = 1 << 5,
+    // System & Security (highest priority)
     Security = 1 << 6,
+    Privacy = 1 << 5,
     System = 1 << 7,
 
-    // User Experience
-    Audio = 1 << 8,
-    Visual = 1 << 9,
+    // Performance
+    Performance = 1 << 14,
+    Latency = 1 << 15,
+
+    // Hardware
+    Disk = 1 << 2,
+    Ram = 1 << 0,
+    Display = 1 << 1,
 
     // GPU Vendors
     Nvidia = 1 << 10,
@@ -37,22 +34,35 @@ public enum OptimizationTags
     // Power
     Power = 1 << 13,
 
-    // Performance
-    Performance = 1 << 14,
-    Latency = 1 << 15,
+    // Network
+    Network = 1 << 3,
+    NetworkRequired = 1 << 4,
+
+    // User Experience
+    Audio = 1 << 8,
+    Visual = 1 << 9,
+
+    // Platform (lowest priority)
+    Windows10Only = 1 << 16,
+    Windows11Only = 1 << 17,
 }
 
 /// <summary>
-///     Provides extension methods to convert <see cref="OptimizationTags" /> to display-friendly representations.
+///     Converts <see cref="OptimizationTags" /> to display-friendly representations.
 /// </summary>
 public static class OptimizationTagsToDisplay
 {
     extension(OptimizationTags tags)
     {
         /// <summary>
-        ///     Converts the tag flags into a sequence of display-friendly representations.
+        ///     Explains what a tag means. One key per tag value, named after the flag.
         /// </summary>
-        /// <returns>An enumerable of <see cref="OptimizationTagDisplay" /> for each set flag.</returns>
+        public string ToExplanation() => Loc.Instance[$"Optimizer.UI.Tags.{tags}.Tooltip"];
+
+        /// <summary>
+        ///     Converts the tag flags into their display representations.
+        /// </summary>
+        /// <returns>One <see cref="OptimizationTagDisplay" /> for each set flag.</returns>
         public IEnumerable<OptimizationTagDisplay> ToDisplays()
         {
             foreach (var flag in Enum.GetValues<OptimizationTags>())
@@ -61,111 +71,124 @@ public static class OptimizationTagsToDisplay
                     continue;
 
                 if (tags.HasFlag(flag))
-                    yield return flag.ToDisplay();
+                    yield return flag.ToDisplay() with
+                    {
+                        Description = flag.ToExplanation(),
+                    };
             }
         }
 
-        /// <summary>
-        ///     Converts a single tag flag to its display representation.
-        /// </summary>
         private OptimizationTagDisplay ToDisplay()
         {
             return tags switch
             {
-                OptimizationTags.Ram => new OptimizationTagDisplay
+                OptimizationTags.Security => new OptimizationTagDisplay
                 {
-                    Icon = SymbolRegular.Memory16,
-                    Display = Translations.Optimizer_UI_Tags_Ram,
-                },
-
-                OptimizationTags.Disk => new OptimizationTagDisplay
-                {
-                    Icon = SymbolRegular.HardDrive20,
-                    Display = Translations.Optimizer_UI_Tags_Disk,
-                },
-
-                OptimizationTags.Latency => new OptimizationTagDisplay
-                {
-                    Icon = SymbolRegular.Clock24,
-                    Display = Translations.Optimizer_UI_Tags_Latency,
-                },
-
-                OptimizationTags.Visual => new OptimizationTagDisplay
-                {
-                    Icon = SymbolRegular.VideoClip24,
-                    Display = Translations.Optimizer_UI_Tags_Visual,
-                },
-
-                OptimizationTags.Display => new OptimizationTagDisplay
-                {
-                    Icon = SymbolRegular.VideoClip24,
-                    Display = Translations.Optimizer_UI_Tags_Display,
-                },
-
-                OptimizationTags.Network => new OptimizationTagDisplay
-                {
-                    Icon = SymbolRegular.NetworkAdapter16,
-                    Display = Translations.Optimizer_UI_Tags_Network,
-                },
-
-                OptimizationTags.Performance => new OptimizationTagDisplay
-                {
-                    Icon = SymbolRegular.Gauge24,
-                    Display = Translations.Optimizer_UI_Tags_Performance,
+                    Icon = SymbolRegular.LockClosed24,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Security"],
+                    Description = Loc.Instance["Optimizer.UI.Tags.Security.Tooltip"],
                 },
 
                 OptimizationTags.Privacy => new OptimizationTagDisplay
                 {
                     Icon = SymbolRegular.LockOpen24,
-                    Display = Translations.Optimizer_UI_Tags_Privacy,
-                },
-
-                OptimizationTags.Audio => new OptimizationTagDisplay
-                {
-                    Icon = SymbolRegular.Headphones24,
-                    Display = Translations.Optimizer_UI_Tags_Audio,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Privacy"],
                 },
 
                 OptimizationTags.System => new OptimizationTagDisplay
                 {
                     Icon = SymbolRegular.Desktop24,
-                    Display = Translations.Optimizer_UI_Tags_System,
+                    Display = Loc.Instance["Optimizer.UI.Tags.System"],
                 },
 
-                OptimizationTags.Security => new OptimizationTagDisplay
+                OptimizationTags.Performance => new OptimizationTagDisplay
                 {
-                    Icon = SymbolRegular.LockClosed24,
-                    Display = Translations.Optimizer_UI_Tags_Security,
+                    Icon = SymbolRegular.Gauge24,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Performance"],
                 },
 
-                OptimizationTags.NetworkRequired => new OptimizationTagDisplay
+                OptimizationTags.Latency => new OptimizationTagDisplay
                 {
-                    Icon = SymbolRegular.Wifi120,
-                    Display = Translations.Optimizer_UI_Tags_NetworkRequired,
+                    Icon = SymbolRegular.Clock24,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Latency"],
+                },
+
+                OptimizationTags.Disk => new OptimizationTagDisplay
+                {
+                    Icon = SymbolRegular.HardDrive20,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Disk"],
+                },
+
+                OptimizationTags.Ram => new OptimizationTagDisplay
+                {
+                    Icon = SymbolRegular.Memory16,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Ram"],
+                },
+
+                OptimizationTags.Display => new OptimizationTagDisplay
+                {
+                    Icon = SymbolRegular.VideoClip24,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Display"],
                 },
 
                 OptimizationTags.Nvidia => new OptimizationTagDisplay
                 {
                     Icon = SymbolRegular.VideoClip24,
-                    Display = Translations.Optimizer_UI_Tags_Nvidia,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Nvidia"],
                 },
 
                 OptimizationTags.Amd => new OptimizationTagDisplay
                 {
                     Icon = SymbolRegular.VideoClip24,
-                    Display = Translations.Optimizer_UI_Tags_Amd,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Amd"],
                 },
 
                 OptimizationTags.Intel => new OptimizationTagDisplay
                 {
                     Icon = SymbolRegular.VideoClip24,
-                    Display = Translations.Optimizer_UI_Tags_Intel,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Intel"],
                 },
 
                 OptimizationTags.Power => new OptimizationTagDisplay
                 {
                     Icon = SymbolRegular.BatteryCharge24,
-                    Display = Translations.Optimizer_UI_Tags_Power,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Power"],
+                },
+
+                OptimizationTags.Network => new OptimizationTagDisplay
+                {
+                    Icon = SymbolRegular.NetworkAdapter16,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Network"],
+                },
+
+                OptimizationTags.NetworkRequired => new OptimizationTagDisplay
+                {
+                    Icon = SymbolRegular.Wifi120,
+                    Display = Loc.Instance["Optimizer.UI.Tags.NetworkRequired"],
+                },
+
+                OptimizationTags.Audio => new OptimizationTagDisplay
+                {
+                    Icon = SymbolRegular.Headphones24,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Audio"],
+                },
+
+                OptimizationTags.Visual => new OptimizationTagDisplay
+                {
+                    Icon = SymbolRegular.VideoClip24,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Visual"],
+                },
+
+                OptimizationTags.Windows10Only => new OptimizationTagDisplay
+                {
+                    Icon = SymbolRegular.Window16,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Windows10Only"],
+                },
+
+                OptimizationTags.Windows11Only => new OptimizationTagDisplay
+                {
+                    Icon = SymbolRegular.Window16,
+                    Display = Loc.Instance["Optimizer.UI.Tags.Windows11Only"],
                 },
 
                 _ => throw new ArgumentOutOfRangeException(nameof(tags)),
@@ -175,17 +198,14 @@ public static class OptimizationTagsToDisplay
 }
 
 /// <summary>
-///     Represents the UI display data for an optimization tag.
+///     UI display data for an optimization tag.
 /// </summary>
 public readonly record struct OptimizationTagDisplay
 {
-    /// <summary>
-    ///     The icon symbol to display.
-    /// </summary>
+    /// <summary>What this tag means, shown as the tooltip of the chip.</summary>
+    public string Description { get; init; }
+
     public required SymbolRegular Icon { get; init; }
 
-    /// <summary>
-    ///     The localized display text for the tag.
-    /// </summary>
     public required string Display { get; init; }
 }

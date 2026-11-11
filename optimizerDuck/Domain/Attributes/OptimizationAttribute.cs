@@ -13,13 +13,16 @@ public sealed class OptimizationAttribute : Attribute
     /// </summary>
     public required string Id { get; init; }
 
-    /// <summary>
-    ///     The risk level associated with applying this optimization.
-    /// </summary>
     public required OptimizationRisk Risk { get; init; }
 
     /// <summary>
     ///     The tags that categorize the system areas this optimization affects.
     /// </summary>
     public required OptimizationTags Tags { get; init; }
+
+    /// <summary>
+    ///     The <see cref="ICondition" /> implementation that must hold on the current system.
+    ///     When <see langword="null" />, the optimization is always available.
+    /// </summary>
+    public Type? Condition { get; init; }
 }

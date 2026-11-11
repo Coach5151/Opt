@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -7,26 +7,17 @@ using Newtonsoft.Json.Linq;
 using optimizerDuck.Common.Helpers;
 using optimizerDuck.Domain.Configuration;
 
-namespace optimizerDuck.Services.Managers;
+namespace optimizerDuck.Services.Configuration;
 
 /// <summary>
 ///     Manages application configuration settings stored in appsettings.json.
 /// </summary>
 public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> logger)
 {
-    /// <summary>
-    ///     The path to the configuration file.
-    /// </summary>
     private readonly string _configPath = Path.Combine(Shared.RootDirectory, "appsettings.json");
 
-    /// <summary>
-    ///     Semaphore for thread-safe access to configuration data.
-    /// </summary>
     private readonly SemaphoreSlim _lock = new(1, 1);
 
-    /// <summary>
-    ///     Cached configuration data.
-    /// </summary>
     private JObject _cache = new();
 
     /// <summary>
@@ -38,11 +29,12 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
     }
 
     /// <summary>
-    ///     Ensures all default configuration keys exist. Adds missing keys with default values and logs them.
+    ///     Ensures all default configuration keys exist. Adds missing keys with default values and
+    ///     logs them.
     /// </summary>
     public async Task EnsureDefaultsAsync()
     {
-        await _lock.WaitAsync();
+        await _lock.WaitAsync().ConfigureAwait(false);
         try
         {
             var defaults = new AppSettings();
@@ -68,7 +60,6 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
                             if (value == null)
                                 continue;
 
-                            // Check both flat key and nested object format
                             var existsFlat = GetTokenIgnoreCase(_cache, key) != null;
                             var existsNested = CheckNestedExists(
                                 _cache,
@@ -78,7 +69,6 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
 
                             if (!existsFlat && !existsNested)
                             {
-                                // Add as nested object format (proper structure)
                                 EnsureNestedValue(
                                     _cache,
                                     prop.Name,
@@ -94,7 +84,6 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
 
             if (addedKeys.Count > 0)
             {
-                // Clean up any duplicate flat keys that may have been added previously
                 CleanupDuplicateKeys(_cache);
                 await SaveConfigAsync().ConfigureAwait(false);
                 logger.LogInformation(
@@ -110,9 +99,6 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
         }
     }
 
-    /// <summary>
-    ///     Checks if a nested key exists in the config.
-    /// </summary>
     private static bool CheckNestedExists(JObject root, string section, string key)
     {
         var sectionToken = GetTokenIgnoreCase(root, section);
@@ -121,9 +107,6 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
         return GetTokenIgnoreCase(sectionObj, key) != null;
     }
 
-    /// <summary>
-    ///     Ensures a nested value exists in the config.
-    /// </summary>
     private static void EnsureNestedValue(JObject root, string section, string key, string value)
     {
         var sectionObj = GetOrCreateObjectIgnoreCase(root, section);
@@ -153,7 +136,6 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
                     var sectionToken = GetTokenIgnoreCase(root, prop.Name);
                     if (sectionToken is JObject)
                     {
-                        // If nested format exists, mark flat key for removal
                         if (GetTokenIgnoreCase(root, flatKey) != null)
                             flatKeysToRemove.Add(flatKey);
                     }
@@ -170,7 +152,8 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
     /// </summary>
     /// <typeparam name="T">The type of the property being updated.</typeparam>
     /// <param name="property">
-    ///     An expression that identifies the configuration property to update, such as <c>x => x.App.Language</c>.
+    ///     An expression that identifies the configuration property to update, such as
+    ///     <c>x => x.App.Language</c>.
     /// </param>
     /// <param name="value">The value to assign to the specified configuration property.</param>
     /// <example>
@@ -204,7 +187,7 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
         }
         var key = string.Join(":", keyParts);
 
-        await SetAsync(key, value?.ToString() ?? "");
+        await SetAsync(key, value?.ToString() ?? "").ConfigureAwait(false);
     }
 
     /// <summary>
@@ -214,7 +197,7 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
     /// <param name="value">The value to set.</param>
     public async Task SetAsync(string key, string value)
     {
-        await _lock.WaitAsync();
+        await _lock.WaitAsync().ConfigureAwait(false);
         try
         {
             var parts = key.Split(':');
@@ -225,6 +208,7 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
 
             SetValueIgnoreCase(current, parts[^1], value);
             await SaveConfigAsync().ConfigureAwait(false);
+            logger.LogInformation("Config key {Key} set to {Value}", key, value);
         }
         finally
         {
@@ -238,7 +222,7 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
     /// <param name="key">The configuration key to remove.</param>
     public async Task RemoveAsync(string key)
     {
-        await _lock.WaitAsync();
+        await _lock.WaitAsync().ConfigureAwait(false);
         try
         {
             var parts = key.Split(':');
@@ -254,6 +238,7 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
 
             RemoveIgnoreCase(current, parts[^1]);
             await SaveConfigAsync().ConfigureAwait(false);
+            logger.LogInformation("Config key {Key} removed", key);
         }
         finally
         {
@@ -274,13 +259,29 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
                 Directory.CreateDirectory(configDir);
 
             if (!File.Exists(_configPath))
+            {
+                logger.LogInformation("Config file not found, starting with empty config");
                 return new JObject();
+            }
 
             var content = await File.ReadAllTextAsync(_configPath).ConfigureAwait(false);
 
-            return string.IsNullOrWhiteSpace(content)
-                ? new JObject()
-                : JsonConvert.DeserializeObject<JObject>(content) ?? new JObject();
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                logger.LogInformation("Config file is empty, starting with empty config");
+                return new JObject();
+            }
+
+            var config = JsonConvert.DeserializeObject<JObject>(content);
+            if (config == null)
+            {
+                logger.LogInformation("Config file is invalid, starting with empty config");
+                return new JObject();
+            }
+
+            var propertyCount = config.Properties().Count();
+            logger.LogInformation("Loaded config with {Count} top-level sections", propertyCount);
+            return config;
         }
         catch (Exception ex)
         {
@@ -359,7 +360,6 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
     /// <param name="value">The value to set.</param>
     private static void SetValueIgnoreCase(JObject current, string key, string value)
     {
-        // Remove all case-insensitive matches
         var toRemove = current
             .Properties()
             .Where(p => string.Equals(p.Name, key, StringComparison.OrdinalIgnoreCase))
@@ -369,7 +369,6 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
         foreach (var name in toRemove)
             current.Remove(name);
 
-        // Add with correct casing
         current[key] = value;
     }
 
@@ -392,22 +391,45 @@ public class ConfigManager(IConfiguration configuration, ILogger<ConfigManager> 
     /// <summary>
     ///     Validates and ensures the config file exists and is valid JSON.
     /// </summary>
-    public static void ValidateConfig()
+    public static void ValidateConfig(ILogger logger)
     {
         var configPath = Path.Combine(Shared.RootDirectory, "appsettings.json");
 
-        // Rewrite config file if it's empty
-        if (!File.Exists(configPath) || string.IsNullOrWhiteSpace(File.ReadAllText(configPath)))
-            File.WriteAllText(configPath, "{}");
-
-        // Rewrite config file if it's invalid JSON
         try
         {
-            JsonConvert.DeserializeObject<JObject>(File.ReadAllText(configPath));
+            if (!File.Exists(configPath))
+            {
+                File.WriteAllText(configPath, "{}");
+                logger.LogInformation("Created default empty config file: {Path}", configPath);
+                return;
+            }
+
+            var content = File.ReadAllText(configPath);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                File.WriteAllText(configPath, "{}");
+                logger.LogWarning("Config file was empty, reset to empty: {Path}", configPath);
+                return;
+            }
+
+            // Quick check for basic JSON structure before full parse
+            var trimmed = content.Trim();
+            if (!trimmed.StartsWith('{') || !trimmed.EndsWith('}'))
+            {
+                File.WriteAllText(configPath, "{}");
+                logger.LogWarning(
+                    "Config file was not valid JSON, reset to empty: {Path}",
+                    configPath
+                );
+                return;
+            }
+
+            JsonConvert.DeserializeObject<JObject>(content);
         }
         catch
         {
             File.WriteAllText(configPath, "{}");
+            logger.LogWarning("Config file was corrupted, reset to empty: {Path}", configPath);
         }
     }
 }
